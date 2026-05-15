@@ -1,0 +1,83 @@
+import 'package:flutter/material.dart';
+import 'package:monex/core/screen_size.dart';
+
+// ignore: must_be_immutable
+class CustomInputField extends StatelessWidget {
+  CustomInputField({
+    super.key,
+    required this.fieldKey,
+    required this.hint,
+    required this.label,
+    required this.fieldController,
+    required this.isPassword,
+    required this.textInputType,
+    this.isObsecured = false,
+    this.onTap,
+    this.validator,
+    this.focusNode
+  });
+  final GlobalKey<FormState> fieldKey;
+  final String hint;
+  final String label;
+  final TextEditingController fieldController;
+  final bool isPassword;
+  final TextInputType textInputType;
+  bool isObsecured;
+  VoidCallback? onTap;
+  final FormFieldValidator<String>? validator;
+  FocusNode? focusNode;
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: fieldKey,
+      child: TextFormField(
+        focusNode: focusNode,
+        style: TextStyle(color: Theme.of(context).hintColor),
+        controller: fieldController,
+        validator: validator,
+        obscureText: isObsecured,
+        keyboardType: textInputType,
+        decoration: InputDecoration(
+          isDense: true,
+          fillColor: Theme.of(context).secondaryHeaderColor,
+          filled: true,
+          hint: Text(
+            hint,
+            style: TextStyle(color: Theme.of(context).hintColor),
+          ),
+
+          label: Text(
+            label,
+            style: TextStyle(color: Theme.of(context).primaryColor),
+          ),
+          suffixIcon: isPassword
+              ? IconButton(
+                  onPressed: onTap,
+                  color: Theme.of(context).primaryColor,
+                  icon: !isObsecured
+                      ? Icon(Icons.visibility_off_outlined)
+                      : Icon(Icons.visibility_outlined),
+                )
+              : null,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ScreenSize.height * 0.015),
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ScreenSize.height * 0.015),
+            borderSide: BorderSide(color: Theme.of(context).primaryColor),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ScreenSize.height * 0.015),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ScreenSize.height * 0.015),
+            borderSide: BorderSide(color: Colors.red),
+          ),
+        ),
+      ),
+    );
+  }
+}
