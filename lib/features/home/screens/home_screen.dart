@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:monex/features/auth/cubit/authentication_cubit.dart';
+import 'package:monex/features/auth/presentation/cubit/authentication_cubit.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

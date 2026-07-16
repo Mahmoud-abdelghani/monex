@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monex/core/screen_size.dart';
-import 'package:monex/features/auth/cubit/authentication_cubit.dart';
-import 'package:monex/features/auth/widgets/custom_input_field.dart';
-import 'package:monex/features/auth/widgets/login_button.dart';
+import 'package:monex/features/auth/presentation/cubit/authentication_cubit.dart';
+import 'package:monex/features/auth/presentation/widgets/auth_button.dart';
+import 'package:monex/features/auth/presentation/widgets/custom_input_field.dart';
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
@@ -30,6 +30,7 @@ class _RegisterFormState extends State<RegisterForm> {
   bool obscureConfirm = true;
 
   void _handleRegister() {
+    FocusScope.of(context).unfocus();
     final isUsernameValid = usernameKey.currentState?.validate() ?? false;
     final isEmailValid = emailKey.currentState?.validate() ?? false;
     final isPasswordValid = passwordKey.currentState?.validate() ?? false;
@@ -132,10 +133,10 @@ class _RegisterFormState extends State<RegisterForm> {
         SizedBox(height: ScreenSize.height * 0.03),
         BlocBuilder<AuthenticationCubit, AuthenticationState>(
           builder: (context, state) {
-            return LoginButton(
+            return AuthButton(
+              label: 'REGISTER',
               onPressed: _handleRegister,
               isLoading: state is AuthenticationSignUpLoading,
-              label: 'REGISTER',
             );
           },
         ),
