@@ -1,16 +1,21 @@
-import 'package:monex/features/auth/domain/entities/eamil.dart';
-import 'package:monex/features/auth/domain/entities/password.dart';
-import 'package:monex/features/auth/domain/repository/auth_reapository.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:monex/core/error/failure.dart';
+import 'package:monex/features/auth/domain/repository/auth_repository.dart';
+import 'package:monex/features/auth/domain/entities/user_entity.dart';
+import 'package:monex/features/auth/domain/value_objects/email.dart';
+import 'package:monex/features/auth/domain/value_objects/password.dart';
 
 class VerifyEmail {
-  AuthReapository authReapository;
+  AuthRepository authReapository;
 
   VerifyEmail({required this.authReapository});
 
-  Future<void> call({
-    required Email email,
-    required Password password,
+  Future<Either<Failure, UserEntity>> call({
+    required String  userEmail,
+    required String  puserPassword,
   }) {
+    final email = Email(userEmail);
+    final password = Password(userEmail);
     return authReapository.verifyEmail(email: email, password: password);
   }
 }

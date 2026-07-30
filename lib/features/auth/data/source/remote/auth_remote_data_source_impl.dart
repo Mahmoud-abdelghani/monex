@@ -1,0 +1,64 @@
+import 'package:monex/core/services/supabase_service.dart';
+import 'package:monex/features/auth/data/models/user_model.dart';
+import 'package:monex/features/auth/data/source/remote/auth_remote_data_source.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
+  final SupabaseClient supabaseClient = SupabaseService.supabase;
+  @override
+  Future<User> login({required String email, required String password}) async {
+    final result = await supabaseClient.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+    return result.user!;
+  }
+
+  @override
+  Future<void> logout() async {
+    await supabaseClient.auth.signOut();
+  }
+
+  @override
+  Future<User> register({
+    required String email,
+    required String password,
+    required String userName,
+  }) async {
+    final result = await supabaseClient.auth.signUp(
+      email: email,
+      password: password,
+      emailRedirectTo: 'com.monex://login-callback',
+      data: {'username': userName},
+    );
+    return result.user!;
+  }
+
+  @override
+  Future<void> sendEmailForPasswordReset({required String email}) async {
+    await supabaseClient.auth.resetPasswordForEmail(
+      email,
+      redirectTo: 'com.monex://reset-password',
+    );
+  }
+
+  @override
+  Future<User> updatePassword({required String newPassword}) async {
+    final result = await supabaseClient.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
+    return result.user!;
+  }
+
+  @override
+  Future<User> verifyEmail({
+    required String email,
+    required String password,
+  }) async {
+    final result = await supabaseClient.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+    return result.user!;
+  }
+}

@@ -1,11 +1,13 @@
-import 'package:monex/features/auth/domain/repository/auth_reapository.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:monex/core/error/failure.dart';
+import 'package:monex/features/auth/domain/repository/auth_repository.dart';
 
 class Logout {
-  AuthReapository authReapository;
+  AuthRepository authReapository;
 
   Logout({required this.authReapository});
 
-  Future<void> call() {
+  Future<Either<Failure, void>> call() {
     return authReapository.logout();
   }
 }
