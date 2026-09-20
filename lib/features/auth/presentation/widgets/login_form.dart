@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:monex/features/auth/presentation/cubit/authentication_cubit.dart';
+import 'package:monex/features/auth/presentation/cubit/login_with_email_password_cubit.dart';
 import 'package:monex/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:monex/features/auth/presentation/widgets/auth_button.dart';
 import 'package:monex/features/auth/presentation/widgets/custom_input_field.dart';
-
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -32,9 +31,11 @@ class _LoginFormState extends State<LoginForm> {
     final isEmailValid = emailKey.currentState?.validate() ?? false;
     final isPasswordValid = passwordKey.currentState?.validate() ?? false;
     if (isEmailValid && isPasswordValid) {
-      BlocProvider.of<AuthenticationCubit>(context).loginWithEmailPassword(
-        email: emailController.text,
-        password: passwordController.text,
+      BlocProvider.of<LoginWithEmailPasswordCubit>(
+        context,
+      ).loginWithEmailPassword(
+        userEmail: emailController.text,
+        userPassword: passwordController.text,
       );
     }
   }
@@ -95,12 +96,12 @@ class _LoginFormState extends State<LoginForm> {
           ),
         ),
         const SizedBox(height: 8),
-        BlocBuilder<AuthenticationCubit, AuthenticationState>(
+        BlocBuilder<LoginWithEmailPasswordCubit, LoginWithEmailPasswordState>(
           builder: (context, state) {
             return AuthButton(
               label: 'LOGIN',
               onPressed: _handleLogin,
-              isLoading: state is AuthenticationSignInLoading,
+              isLoading: state is LoginWithEmailPasswordLoading,
             );
           },
         ),

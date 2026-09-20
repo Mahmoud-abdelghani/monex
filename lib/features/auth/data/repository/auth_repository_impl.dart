@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:monex/core/error/error_message_extraction.dart';
 import 'package:monex/core/error/failure.dart';
 import 'package:monex/core/error/failures/server_failure.dart';
 import 'package:monex/features/auth/data/source/remote/auth_remote_data_source.dart';
@@ -24,7 +25,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(UserEntity(id: user.id, email: user.email!));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(extractErrorMessage(e)));
     }
   }
 
@@ -34,7 +35,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await remoteDataSource.logout();
       return const Right(null);
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(extractErrorMessage(e)));
     }
   }
 
@@ -52,7 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(UserEntity(id: user.id, email: user.email!));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(extractErrorMessage(e)));
     }
   }
 
@@ -64,7 +65,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await remoteDataSource.sendEmailForPasswordReset(email: email.value);
       return const Right(null);
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(extractErrorMessage(e)));
     }
   }
 
@@ -78,7 +79,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(UserEntity(id: user.id, email: user.email!));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(extractErrorMessage(e)));
     }
   }
 
@@ -94,7 +95,17 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(UserEntity(id: user.id, email: user.email!));
     } on Exception catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(extractErrorMessage(e)));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> loginWithGoogle() async {
+    try {
+      final user = await remoteDataSource.loginWithGoogle();
+      return Right(UserEntity(id: user.id, email: user.email!));
+    } on Exception catch (e) {
+      return Left(ServerFailure(extractErrorMessage(e)));
     }
   }
 }

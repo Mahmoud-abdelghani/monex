@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monex/core/screen_size.dart';
-import 'package:monex/features/auth/presentation/cubit/authentication_cubit.dart';
+import 'package:monex/features/auth/presentation/cubit/sign_in_with_google_cubit.dart';
 import 'package:monex/features/auth/presentation/widgets/auth_button.dart';
+
 /// Google sign-in button.
 ///
 /// Reads [AuthenticationLoginWithGoogleLoading] from the Bloc and shows
@@ -13,15 +14,15 @@ class GoogleAuthButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthenticationCubit, AuthenticationState>(
+    return BlocBuilder<SignInWithGoogleCubit, SignInWithGoogleState>(
       builder: (context, state) {
-        final isLoading = state is AuthenticationLoginWithGoogleLoading;
+        final isLoading = state is SignInWithGoogleLoading;
         return AuthButton(
           label: 'CONTINUE WITH GOOGLE',
           isLoading: isLoading,
           isOutlined: true,
           onPressed: () {
-            BlocProvider.of<AuthenticationCubit>(context).loginWithGoogle();
+            BlocProvider.of<SignInWithGoogleCubit>(context).signInWithGoogle();
           },
           customChild: Row(
             mainAxisAlignment: MainAxisAlignment.center,

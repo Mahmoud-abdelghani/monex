@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monex/core/screen_size.dart';
-import 'package:monex/features/auth/presentation/cubit/authentication_cubit.dart';
+import 'package:monex/features/auth/presentation/cubit/register_cubit.dart';
 import 'package:monex/features/auth/presentation/screens/verification_screen.dart';
 import 'package:monex/features/auth/presentation/widgets/auth_snackbar.dart';
 import 'package:monex/features/auth/presentation/widgets/login_header.dart';
@@ -51,16 +51,16 @@ class _RegisterScreenState extends State<RegisterScreen>
   Widget build(BuildContext context) {
     ScreenSize.init(context);
 
-    return BlocConsumer<AuthenticationCubit, AuthenticationState>(
+    return BlocConsumer<RegisterCubit, RegisterState>(
       listener: (context, state) {
-        if (state is AuthenticationSignUpSuccess) {
+        if (state is RegisterSuccess) {
           AuthSnackbar.showSuccess(context, message: 'Account created!');
           Future.delayed(const Duration(milliseconds: 400), () {
             if (context.mounted) {
               Navigator.pushNamed(context, EmailVerificationScreen.routeName);
             }
           });
-        } else if (state is AuthenticationSignUpFailure) {
+        } else if (state is RegisterFailure) {
           AuthSnackbar.showError(context, message: state.message);
         }
       },

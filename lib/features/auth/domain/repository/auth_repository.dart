@@ -24,4 +24,6 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> sendEmailForPasswordReset({required Email email});
 
   Future<Either<Failure, UserEntity>> verifyEmail({required Email email, required Password password});
+
+  Future<Either<Failure, UserEntity>> loginWithGoogle();
 }

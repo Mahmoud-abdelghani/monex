@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monex/core/screen_size.dart';
-import 'package:monex/features/auth/presentation/cubit/authentication_cubit.dart';
+import 'package:monex/features/auth/presentation/cubit/send_email_reset_password_cubit.dart';
 import 'package:monex/features/auth/presentation/widgets/auth_button.dart';
 import 'package:monex/features/auth/presentation/widgets/auth_snackbar.dart';
 import 'package:monex/features/auth/presentation/widgets/custom_input_field.dart';
@@ -53,9 +53,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   void _handleSend() {
     FocusScope.of(context).unfocus();
     if (emailKey.currentState?.validate() ?? false) {
-      BlocProvider.of<AuthenticationCubit>(
+      BlocProvider.of<SendEmailResetPasswordCubit>(
         context,
-      ).sendEmailForPasswordReset(email: emailController.text);
+      ).sendEmailResetPassword(userEmail: emailController.text.trim());
     }
   }
 
@@ -63,14 +63,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   Widget build(BuildContext context) {
     ScreenSize.init(context);
 
-    return BlocConsumer<AuthenticationCubit, AuthenticationState>(
+    return BlocConsumer<
+      SendEmailResetPasswordCubit,
+      SendEmailResetPasswordState
+    >(
       listener: (context, state) {
-        if (state is ForgetPasswordSuccess) {
+        if (state is SendEmailResetPasswordSuccess) {
           AuthSnackbar.showSuccess(
             context,
             message: 'Reset link sent! Check your inbox.',
           );
-        } else if (state is ForgetPasswordFailure) {
+        } else if (state is SendEmailResetPasswordFailure) {
           AuthSnackbar.showError(context, message: state.message);
         }
       },
@@ -153,12 +156,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                           },
                         ),
                         SizedBox(height: ScreenSize.height * 0.035),
-                        BlocBuilder<AuthenticationCubit, AuthenticationState>(
+                        BlocBuilder<
+                          SendEmailResetPasswordCubit,
+                          SendEmailResetPasswordState
+                        >(
                           builder: (context, state) {
                             return AuthButton(
                               label: 'SEND RESET LINK',
                               onPressed: _handleSend,
-                              isLoading: state is ForgetPasswordLoading,
+                              isLoading: state is SendEmailResetPasswordLoading,
                             );
                           },
                         ),

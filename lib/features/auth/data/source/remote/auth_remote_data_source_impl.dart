@@ -1,10 +1,10 @@
-import 'package:monex/core/services/supabase_service.dart';
-import 'package:monex/features/auth/data/models/user_model.dart';
 import 'package:monex/features/auth/data/source/remote/auth_remote_data_source.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final SupabaseClient supabaseClient = SupabaseService.supabase;
+  final SupabaseClient supabaseClient;
+
+  AuthRemoteDataSourceImpl(this.supabaseClient);
   @override
   Future<User> login({required String email, required String password}) async {
     final result = await supabaseClient.auth.signInWithPassword(
@@ -29,7 +29,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       email: email,
       password: password,
       emailRedirectTo: 'com.monex://login-callback',
-      data: {'username': userName},
+      data: {'name': userName},
     );
     return result.user!;
   }
@@ -60,5 +60,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       password: password,
     );
     return result.user!;
+  }
+
+  @override
+  Future<User> loginWithGoogle() async {
+    await supabaseClient.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: 'com.monex://login-callback',
+    );
+    await supabaseClient.auth.onAuthStateChange.firstWhere(
+      (element) => element.session != null,
+    );
+
+    return supabaseClient.auth.currentUser!;
   }
 }

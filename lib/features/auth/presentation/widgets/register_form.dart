@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monex/core/screen_size.dart';
-import 'package:monex/features/auth/presentation/cubit/authentication_cubit.dart';
+import 'package:monex/features/auth/presentation/cubit/register_cubit.dart';
 import 'package:monex/features/auth/presentation/widgets/auth_button.dart';
 import 'package:monex/features/auth/presentation/widgets/custom_input_field.dart';
 
@@ -37,10 +37,10 @@ class _RegisterFormState extends State<RegisterForm> {
     final isConfirmValid = confirmPasswordKey.currentState?.validate() ?? false;
 
     if (isUsernameValid && isEmailValid && isPasswordValid && isConfirmValid) {
-      BlocProvider.of<AuthenticationCubit>(context).signUp(
-        email: emailController.text,
-        password: passwordController.text,
-        username: usernameController.text,
+      BlocProvider.of<RegisterCubit>(context).register(
+        userEmail: emailController.text,
+        userPassword: passwordController.text,
+        userUsername: usernameController.text,
       );
     }
   }
@@ -131,12 +131,12 @@ class _RegisterFormState extends State<RegisterForm> {
           },
         ),
         SizedBox(height: ScreenSize.height * 0.03),
-        BlocBuilder<AuthenticationCubit, AuthenticationState>(
+        BlocBuilder<RegisterCubit, RegisterState>(
           builder: (context, state) {
             return AuthButton(
               label: 'REGISTER',
               onPressed: _handleRegister,
-              isLoading: state is AuthenticationSignUpLoading,
+              isLoading: state is RegisterLoading,
             );
           },
         ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monex/core/screen_size.dart';
-import 'package:monex/features/auth/presentation/cubit/authentication_cubit.dart';
+import 'package:monex/features/auth/presentation/cubit/change_password_cubit.dart';
 import 'package:monex/features/auth/presentation/screens/password_updated_screen.dart';
 import 'package:monex/features/auth/presentation/widgets/auth_button.dart';
 import 'package:monex/features/auth/presentation/widgets/auth_snackbar.dart';
@@ -65,9 +65,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     final isConfirmValid = confirmPasswordKey.currentState?.validate() ?? false;
 
     if (isPasswordValid && isConfirmValid) {
-      BlocProvider.of<AuthenticationCubit>(
+      BlocProvider.of<ChangePasswordCubit>(
         context,
-      ).updatePassword(newPassword: passwordController.text);
+      ).changePassword(userNewPassword: passwordController.text);
     }
   }
 
@@ -75,9 +75,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
   Widget build(BuildContext context) {
     ScreenSize.init(context);
 
-    return BlocConsumer<AuthenticationCubit, AuthenticationState>(
+    return BlocConsumer<ChangePasswordCubit, ChangePasswordState>(
       listener: (context, state) {
-        if (state is UpdatePasswordSuccess) {
+        if (state is ChangePasswordSuccess) {
           AuthSnackbar.showSuccess(
             context,
             message: 'Password updated successfully!',
@@ -90,7 +90,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
               );
             }
           });
-        } else if (state is UpdatePasswordFailure) {
+        } else if (state is ChangePasswordFailure) {
           AuthSnackbar.showError(context, message: state.message);
         }
       },
@@ -199,12 +199,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                           },
                         ),
                         SizedBox(height: ScreenSize.height * 0.035),
-                        BlocBuilder<AuthenticationCubit, AuthenticationState>(
+                        BlocBuilder<ChangePasswordCubit, ChangePasswordState>(
                           builder: (context, state) {
                             return AuthButton(
                               label: 'RESET PASSWORD',
                               onPressed: _handleReset,
-                              isLoading: state is UpdatePasswordLoading,
+                              isLoading: state is ChangePasswordLoading,
                             );
                           },
                         ),
