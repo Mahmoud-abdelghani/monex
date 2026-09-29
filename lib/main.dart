@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monex/core/di/core_dependency_injection.dart';
 import 'package:monex/core/di/injection_container.dart';
+import 'package:monex/core/local/database/dao/budget_dao.dart';
 import 'package:monex/core/sync/sync_coordinator.dart';
+import 'package:monex/core/sync/sync_engine.dart';
 import 'package:monex/features/auth/di/auth_depenency_injection.dart';
 import 'package:monex/features/auth/presentation/cubit/change_password_cubit.dart';
 import 'package:monex/features/auth/presentation/cubit/login_with_email_password_cubit.dart';
@@ -16,16 +18,35 @@ import 'package:monex/features/auth/presentation/screens/password_updated_screen
 import 'package:monex/features/auth/presentation/screens/register_screen.dart';
 import 'package:monex/features/auth/presentation/screens/reset_password_screen.dart';
 import 'package:monex/features/auth/presentation/screens/verification_screen.dart';
+import 'package:monex/features/budget/di/budget_dependency_injection.dart';
+import 'package:monex/features/budget/domain/usecase/get_current_budget_usecase.dart';
+import 'package:monex/features/budget/presentation/cubit/create_budget_cubit.dart';
+import 'package:monex/features/budget/presentation/cubit/get_current_budget_cubit.dart';
+import 'package:monex/features/budget/presentation/cubit/update_budget_cubit.dart';
+import 'package:monex/features/budget/presentation/cubit/watch_budget_cubit.dart';
 import 'package:monex/features/expense/di/expense_dependency_injection.dart';
 import 'package:monex/features/expense/presentation/cubit/delete_expense_cubit.dart';
 import 'package:monex/features/expense/presentation/cubit/update_expense_cubit.dart';
 import 'package:monex/features/expense/presentation/cubit/watch_expenses_cubit.dart';
+import 'package:monex/features/goals/di/goals_dependency_injection.dart';
+import 'package:monex/features/goals/presentation/cubit/add_goal_cubit.dart';
+import 'package:monex/features/goals/presentation/cubit/complete_goal_cubit.dart';
+import 'package:monex/features/goals/presentation/cubit/delete_goal_cubit.dart';
+import 'package:monex/features/goals/presentation/cubit/update_goal_cubit.dart';
+import 'package:monex/features/goals/presentation/cubit/watch_goal_cubit.dart';
+import 'package:monex/features/home/screens/create_budget_screen.dart';
 import 'package:monex/features/home/screens/home_screen.dart';
 import 'package:monex/features/income/di/incomes_dependency_injection.dart';
 import 'package:monex/features/income/presentation/cubit/add_income_cubit.dart';
 import 'package:monex/features/income/presentation/cubit/delete_income_cubit.dart';
 import 'package:monex/features/income/presentation/cubit/update_income_cubit.dart';
 import 'package:monex/features/income/presentation/cubit/watch_incomes_cubit.dart';
+import 'package:monex/features/savings/di/savings_dependency_injection.dart';
+import 'package:monex/features/savings/presentation/cubit/add_saving_cubit.dart';
+import 'package:monex/features/savings/presentation/cubit/delete_saving_cubit.dart';
+import 'package:monex/features/savings/presentation/cubit/get_savings_by_goal_id_cubit.dart';
+import 'package:monex/features/savings/presentation/cubit/update_saving_cubit.dart';
+import 'package:monex/features/savings/presentation/cubit/watch_savings_cubit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -35,6 +56,9 @@ void setupDependencies() {
   registerAuthDependencies();
   registerExpenseDependencies();
   registerIncomesDependencies();
+  registerGoalsDependencies();
+  registerSavingsDependencies();
+  registerBudgetDependencies();
 }
 
 void main() async {
@@ -124,6 +148,28 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => getIt<AddIncomeCubit>()),
         BlocProvider(create: (context) => getIt<UpdateIncomeCubit>()),
         BlocProvider(create: (context) => getIt<DeleteIncomeCubit>()),
+
+        BlocProvider(
+          create: (context) => getIt<WatchGoalCubit>()..watchGoals(),
+        ),
+        BlocProvider(create: (context) => getIt<AddGoalCubit>()),
+        BlocProvider(create: (context) => getIt<UpdateGoalCubit>()),
+        BlocProvider(create: (context) => getIt<DeleteGoalCubit>()),
+        BlocProvider(create: (context) => getIt<CompleteGoalCubit>()),
+
+        BlocProvider(
+          create: (context) => getIt<WatchSavingsCubit>()..watchSavings(),
+        ),
+        BlocProvider(create: (context) => getIt<AddSavingCubit>()),
+        BlocProvider(create: (context) => getIt<UpdateSavingCubit>()),
+        BlocProvider(create: (context) => getIt<DeleteSavingCubit>()),
+        BlocProvider(create: (context) => getIt<GetSavingsByGoalIdCubit>()),
+        BlocProvider(
+          create: (context) => getIt<WatchBudgetCubit>()..watchBudget(),
+        ),
+        BlocProvider(create: (context) => getIt<CreateBudgetCubit>()),
+        BlocProvider(create: (context) => getIt<UpdatebudgetCubit>()),
+        BlocProvider(create: (context) => getIt<GetCurrentBudgetCubit>()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -165,15 +211,44 @@ class MyApp extends StatelessWidget {
             case HomeScreen.routeName:
               return _fadeRoute(const HomeScreen());
 
+            case CreateBudgetScreen.routeName:
+              return _fadeRoute(const CreateBudgetScreen());
+
             default:
               return null;
           }
         },
 
-        home: getIt<SupabaseClient>().auth.currentUser != null
-            ? const HomeScreen()
-            : const LoginScreen(),
+        home: FutureBuilder(
+          future: _handleLoginBudget(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return snapshot.data as Widget;
+            } else {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+          },
+        ),
       ),
     );
+  }
+
+  Future<Widget> _handleLoginBudget() async {
+    if (getIt<SupabaseClient>().auth.currentUser != null) {
+      if (await getIt<BudgetDao>().getCurrentBudget() == null) {
+        await getIt<SyncEngine>().sync();
+        if (await getIt<BudgetDao>().getCurrentBudget() == null) {
+          return const CreateBudgetScreen();
+        } else {
+          return const HomeScreen();
+        }
+      } else {
+        return const HomeScreen();
+      }
+    } else {
+      return const LoginScreen();
+    }
   }
 }

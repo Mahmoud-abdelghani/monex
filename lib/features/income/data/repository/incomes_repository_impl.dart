@@ -1,4 +1,5 @@
 import 'package:fpdart/src/either.dart';
+import 'package:monex/core/di/uuid_container.dart';
 import 'package:monex/core/error/error_message_extraction.dart';
 import 'package:monex/core/error/failure.dart';
 import 'package:monex/core/error/failures/local_storage_failure.dart';
@@ -17,7 +18,7 @@ class IncomesRepositoryImpl implements IncomesRepository {
   @override
   Future<Either<Failure, void>> addIncome(IncomeEntity income) async {
     try {
-      final uuid = Uuid();
+     
       final IncomeModel incomeModel = IncomeModel.fromEntity(income);
       return Right(
         await incomesLocalDataSource.insertIncome(
@@ -42,7 +43,7 @@ class IncomesRepositoryImpl implements IncomesRepository {
   @override
   Future<Either<Failure, void>> deleteIncome(String incomeId) async {
     try {
-      final uuid = Uuid();
+
       return Right(
         await incomesLocalDataSource.deleteIncome(
           incomeId,
@@ -81,7 +82,7 @@ class IncomesRepositoryImpl implements IncomesRepository {
         await incomesLocalDataSource.updateIncome(
           IncomeModel.fromEntity(income),
           PendingOperationModel(
-            operationId: Uuid().v4(),
+            operationId: uuid.v4(),
             entityId: income.id,
             entityType: EntityType.income,
             operation: Operation.update,

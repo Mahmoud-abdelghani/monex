@@ -1,16 +1,22 @@
 import 'dart:developer';
 
+import 'package:monex/core/di/injection_container.dart';
 import 'package:monex/core/local/database/datasources/pending_operations_local_data_source.dart';
-import 'package:monex/core/local/database/datasources/pending_operations_local_data_source_impl.dart';
 import 'package:monex/core/local/database/enums/sync_enums.dart';
 import 'package:monex/core/local/database/models/pending_operation_model.dart';
 import 'package:monex/core/sync/retry_policy.dart';
 import 'package:monex/core/sync/sync_engine.dart';
-import 'package:monex/features/expense/data/models/expense_model.dart';
+import 'package:monex/features/budget/data/source/local/budget_local_data_source.dart';
+import 'package:monex/features/budget/data/source/remote/budget_remote_data_source.dart';
 import 'package:monex/features/expense/data/source/local/expense_local_data_source.dart';
 import 'package:monex/features/expense/data/source/remote/expense_remote_data_source.dart';
+import 'package:monex/features/goals/data/source/local/goals_local_data_source.dart';
+import 'package:monex/features/goals/data/source/remote/goals_remote_data_source.dart';
 import 'package:monex/features/income/data/source/local/incomes_local_data_source.dart';
 import 'package:monex/features/income/data/source/remote/incomes_remote_data_source.dart';
+import 'package:monex/features/savings/data/source/local/savings_local_data_source.dart';
+import 'package:monex/features/savings/data/source/remote/savings_remote_data_source.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SyncEngineImpl implements SyncEngine {
   final ExpenseLocalDataSource expenseLocalDataSource;
@@ -18,6 +24,12 @@ class SyncEngineImpl implements SyncEngine {
   final PendingOperationsLocalDataSource pendingOperationsLocalDataSource;
   final IncomesLocalDataSource incomesLocalDataSource;
   final IncomesRemoteDataSource incomeRemoteDataSource;
+  final GoalsRemoteDataSource goalsRemoteDataSource;
+  final GoalsLocalDataSource goalsLocalDataSource;
+  final SavingsRemoteDataSource savingsRemoteDataSource;
+  final SavingsLocalDataSource savingsLocalDataSource;
+  final BudgetLocalDataSource budgetLocalDataSource;
+  final BudgetRemoteDataSource budgetRemoteDataSource;
 
   SyncEngineImpl({
     required this.expenseLocalDataSource,
@@ -25,6 +37,12 @@ class SyncEngineImpl implements SyncEngine {
     required this.pendingOperationsLocalDataSource,
     required this.incomesLocalDataSource,
     required this.incomeRemoteDataSource,
+    required this.goalsRemoteDataSource,
+    required this.goalsLocalDataSource,
+    required this.savingsRemoteDataSource,
+    required this.savingsLocalDataSource,
+    required this.budgetLocalDataSource,
+    required this.budgetRemoteDataSource,
   });
   bool isSyncing = false;
   @override
@@ -35,7 +53,7 @@ class SyncEngineImpl implements SyncEngine {
       log('Syncing...');
       final operations = await pendingOperationsLocalDataSource
           .getPendingOperations();
-
+      log('${operations.length} pending operations found');
       for (final operation in operations) {
         if (!_canRetry(operation)) {
           continue;
@@ -68,10 +86,39 @@ class SyncEngineImpl implements SyncEngine {
             }
 
           case EntityType.goal:
-            throw UnimplementedError();
+            switch (operation.operation) {
+              case Operation.insert:
+                await _handleGoalInsert(operation);
+              case Operation.update:
+                await _handleGoalUpdate(operation);
+              case Operation.delete:
+                await _handleGoalDelete(operation);
+            }
+          case EntityType.saving:
+            switch (operation.operation) {
+              case Operation.insert:
+                await _handleSavingInsert(operation);
+              case Operation.update:
+                await _handleSavingUpdate(operation);
+              case Operation.delete:
+                await _handleSavingDelete(operation);
+            }
+          case EntityType.budget:
+            switch (operation.operation) {
+              case Operation.insert:
+                await _handleBudgetInsert(operation);
+              case Operation.update:
+                await _handleBudgetUpdate(operation);
+              case Operation.delete:
+                log('Unable to delete budget');
+            }
         }
       }
       await _syncRemoteExpenses();
+      await _syncRemoteIncomes();
+      await _syncRemoteGoals();
+      await _syncRemoteSavings();
+      await _syncRemoteBudget();
     } finally {
       isSyncing = false;
     }
@@ -134,12 +181,118 @@ class SyncEngineImpl implements SyncEngine {
     }
   }
 
+  Future<void> _handleGoalInsert(PendingOperationModel operation) async {
+    try {
+      final goal = await goalsLocalDataSource.getGoalById(operation.entityId);
+
+      if (goal == null) {
+        await pendingOperationsLocalDataSource.deleteOperation(
+          operation.operationId,
+        );
+        return;
+      }
+
+      await goalsRemoteDataSource.insertGoal(goal, operation.operationId);
+
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } on Exception catch (e) {
+      log(e.toString());
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
+  Future<void> _handleSavingInsert(PendingOperationModel operation) async {
+    try {
+      final saving = await savingsLocalDataSource.getSavingById(
+        operation.entityId,
+      );
+
+      if (saving == null) {
+        await pendingOperationsLocalDataSource.deleteOperation(
+          operation.operationId,
+        );
+        return;
+      }
+
+      await savingsRemoteDataSource.insertSaving(saving, operation.operationId);
+
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } on Exception catch (e) {
+      log(e.toString());
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
+  Future<void> _handleBudgetInsert(PendingOperationModel operation) async {
+    try {
+      final budget = await budgetLocalDataSource.getCurrentBudget();
+      if (budget == null) {
+        await pendingOperationsLocalDataSource.deleteOperation(
+          operation.operationId,
+        );
+        return;
+      }
+      await budgetRemoteDataSource.createBudget(budget);
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } catch (e) {
+      log(e.toString());
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
   Future<void> _syncRemoteExpenses() async {
     try {
       final remoteExpenses = await expenseRemoteDataSource.getExpenses();
       await expenseLocalDataSource.syncRemoteExpenses(remoteExpenses);
     } on Exception catch (e) {
       log('Error syncing remote expenses: $e');
+    }
+  }
+
+  Future<void> _syncRemoteSavings() async {
+    try {
+      final remoteSavings = await savingsRemoteDataSource.getSavings();
+      await savingsLocalDataSource.syncRemoteSavings(remoteSavings);
+    } on Exception catch (e) {
+      log('Error syncing remote savings: $e');
+    }
+  }
+
+  Future<void> _syncRemoteIncomes() async {
+    try {
+      final remoteIncomes = await incomeRemoteDataSource.getIncomes();
+      await incomesLocalDataSource.syncRemoteIncomes(remoteIncomes);
+    } on Exception catch (e) {
+      log('Error syncing remote incomes: $e');
+    }
+  }
+
+  Future<void> _syncRemoteGoals() async {
+    try {
+      final remoteGoals = await goalsRemoteDataSource.getGoals();
+      await goalsLocalDataSource.syncRemoteGoals(remoteGoals);
+    } on Exception catch (e) {
+      log('Error syncing remote goals: $e');
+    }
+  }
+
+  Future<void> _syncRemoteBudget() async {
+    try {
+      final remoteBudget = await budgetRemoteDataSource.getCurrentBudget(
+        getIt<SupabaseClient>().auth.currentUser!.id,
+      );
+      if (remoteBudget == null) {
+        return;
+      }
+      await budgetLocalDataSource.syncRemoteBudget(remoteBudget);
+    } on Exception catch (e) {
+      log('Error syncing remote budget: $e');
     }
   }
 
@@ -187,6 +340,68 @@ class SyncEngineImpl implements SyncEngine {
     }
   }
 
+  Future<void> _handleGoalUpdate(PendingOperationModel operation) async {
+    try {
+      final goal = await goalsLocalDataSource.getGoalById(operation.entityId);
+
+      if (goal == null) {
+        await pendingOperationsLocalDataSource.deleteOperation(
+          operation.operationId,
+        );
+        return;
+      }
+      await goalsRemoteDataSource.updateGoal(goal);
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } on Exception catch (e) {
+      log(e.toString());
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
+  Future<void> _handleSavingUpdate(PendingOperationModel operation) async {
+    try {
+      final saving = await savingsLocalDataSource.getSavingById(
+        operation.entityId,
+      );
+
+      if (saving == null) {
+        await pendingOperationsLocalDataSource.deleteOperation(
+          operation.operationId,
+        );
+        return;
+      }
+
+      await savingsRemoteDataSource.updateSaving(saving);
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } on Exception catch (e) {
+      log(e.toString());
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
+  Future<void> _handleBudgetUpdate(PendingOperationModel operation) async {
+    try {
+      final budget = await budgetLocalDataSource.getCurrentBudget();
+      if (budget == null) {
+        await pendingOperationsLocalDataSource.deleteOperation(
+          operation.operationId,
+        );
+        return;
+      }
+      await budgetRemoteDataSource.updateBudget(budget);
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } catch (e) {
+      log(e.toString());
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
   Future<void> _handleExpenseDelete(PendingOperationModel operation) async {
     try {
       await expenseRemoteDataSource.deleteExpense(operation.entityId);
@@ -205,6 +420,29 @@ class SyncEngineImpl implements SyncEngine {
         operation.operationId,
       );
     } on Exception catch (e) {
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
+  Future<void> _handleGoalDelete(PendingOperationModel operation) async {
+    try {
+      await goalsRemoteDataSource.deleteGoal(operation.entityId);
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } on Exception catch (e) {
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
+  Future<void> _handleSavingDelete(PendingOperationModel operation) async {
+    try {
+      await savingsRemoteDataSource.deleteSaving(operation.entityId);
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } on Exception catch (e) {
+      log(e.toString());
       await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
     }
   }

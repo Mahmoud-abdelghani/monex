@@ -1,4 +1,5 @@
 import 'package:fpdart/src/either.dart';
+import 'package:monex/core/di/uuid_container.dart';
 import 'package:monex/core/error/error_message_extraction.dart';
 import 'package:monex/core/error/failure.dart';
 import 'package:monex/core/error/failures/local_storage_failure.dart';
@@ -26,7 +27,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     required ExpenseEntity expense,
   }) async {
     try {
-      final uuid = Uuid();
+   
       final ExpenseModel expenseModel = ExpenseModel.fromEntity(expense);
       await expenseLocalDataSource.insertExpense(
         expenseModel,
@@ -53,11 +54,11 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     required String expenseId,
   }) async {
     try {
-      final uuid = Uuid().v4();
+ 
       await expenseLocalDataSource.deleteExpense(
         expenseId,
         PendingOperationModel(
-          operationId: uuid,
+          operationId: uuid.v4(),
           entityId: expenseId,
           entityType: EntityType.expense,
           operation: Operation.delete,
@@ -84,12 +85,12 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     required ExpenseEntity expense,
   }) async {
     try {
-      final uuid = Uuid().v4();
+     
       final expenseModel = ExpenseModel.fromEntity(expense);
       await expenseLocalDataSource.updateExpense(
         expenseModel,
         PendingOperationModel(
-          operationId: uuid,
+          operationId: uuid.v4(),
           entityId: expense.id,
           entityType: EntityType.expense,
           operation: Operation.update,

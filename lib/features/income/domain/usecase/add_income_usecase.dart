@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:monex/core/di/uuid_container.dart';
 import 'package:monex/core/error/failure.dart';
 import 'package:monex/features/income/domain/entities/income_entity.dart';
 import 'package:monex/features/income/domain/repository/incomes_repository.dart';
@@ -23,7 +24,7 @@ class AddIncomeUsecase {
       amount: amount,
       categoryId: categoryId,
       date: date,
-      id: Uuid().v4(),
+      id: uuid.v4(),
       userId: userId,
     ),
   );

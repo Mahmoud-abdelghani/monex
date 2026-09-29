@@ -39,13 +39,10 @@ class PendingOperationsDao extends DatabaseAccessor<AppDatabase>
         .then((operation) => operation != null);
   }
 
-  Future<void> updatePendingOperation(
-    String operationId,
-    ExpenseModel expense,
-  ) {
+  Future<void> updatePendingOperation(String operationId, String entityId) {
     return (update(pendingOperationsTable)
           ..where((tbl) => tbl.operationId.equals(operationId)))
-        .write(PendingOperationsTableCompanion(entityId: Value(expense.id)))
+        .write(PendingOperationsTableCompanion(entityId: Value(entityId)))
         .then((rows) => rows > 0);
   }
 
@@ -69,7 +66,7 @@ class PendingOperationsDao extends DatabaseAccessor<AppDatabase>
         .then((rows) => rows > 0);
   }
 
-  Future<bool> resetRetry (String operationId){
+  Future<bool> resetRetry(String operationId) {
     return (update(pendingOperationsTable)
           ..where((tbl) => tbl.operationId.equals(operationId)))
         .write(
@@ -80,5 +77,13 @@ class PendingOperationsDao extends DatabaseAccessor<AppDatabase>
           ),
         )
         .then((rows) => rows > 0);
+  }
+
+  Future<List<PendingOperationsTableData>> getPendingOperationsByEntityId(
+    String entityId,
+  ) {
+    return (select(pendingOperationsTable)
+          ..where((tbl) => tbl.entityId.equals(entityId)))
+        .get();
   }
 }
