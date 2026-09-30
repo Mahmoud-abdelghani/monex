@@ -14,6 +14,8 @@ import 'package:monex/features/goals/data/source/local/goals_local_data_source.d
 import 'package:monex/features/goals/data/source/remote/goals_remote_data_source.dart';
 import 'package:monex/features/income/data/source/local/incomes_local_data_source.dart';
 import 'package:monex/features/income/data/source/remote/incomes_remote_data_source.dart';
+import 'package:monex/features/reminders/data/sources/local/reminders_local_data_source.dart';
+import 'package:monex/features/reminders/data/sources/remote/reminders_remote_data_source.dart';
 import 'package:monex/features/savings/data/source/local/savings_local_data_source.dart';
 import 'package:monex/features/savings/data/source/remote/savings_remote_data_source.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -30,6 +32,8 @@ class SyncEngineImpl implements SyncEngine {
   final SavingsLocalDataSource savingsLocalDataSource;
   final BudgetLocalDataSource budgetLocalDataSource;
   final BudgetRemoteDataSource budgetRemoteDataSource;
+  final RemindersRemoteDataSource remindersRemoteDataSource;
+  final RemindersLocalDataSource remindersLocalDataSource;
 
   SyncEngineImpl({
     required this.expenseLocalDataSource,
@@ -43,6 +47,8 @@ class SyncEngineImpl implements SyncEngine {
     required this.savingsLocalDataSource,
     required this.budgetLocalDataSource,
     required this.budgetRemoteDataSource,
+    required this.remindersRemoteDataSource,
+    required this.remindersLocalDataSource,
   });
   bool isSyncing = false;
   @override
@@ -112,6 +118,15 @@ class SyncEngineImpl implements SyncEngine {
               case Operation.delete:
                 log('Unable to delete budget');
             }
+          case EntityType.reminder:
+            switch (operation.operation) {
+              case Operation.insert:
+                await _handleReminderInsert(operation);
+              case Operation.update:
+                await _handleReminderUpdate(operation);
+              case Operation.delete:
+                await _handleReminderDelete(operation);
+            }
         }
       }
       await _syncRemoteExpenses();
@@ -119,6 +134,7 @@ class SyncEngineImpl implements SyncEngine {
       await _syncRemoteGoals();
       await _syncRemoteSavings();
       await _syncRemoteBudget();
+      await _syncRemoteReminders();
     } finally {
       isSyncing = false;
     }
@@ -246,6 +262,33 @@ class SyncEngineImpl implements SyncEngine {
     }
   }
 
+  Future<void> _handleReminderInsert(PendingOperationModel operation) async {
+    try {
+      final reminder = await remindersLocalDataSource.getReminderById(
+        operation.entityId,
+      );
+
+      if (reminder == null) {
+        await pendingOperationsLocalDataSource.deleteOperation(
+          operation.operationId,
+        );
+        return;
+      }
+
+      await remindersRemoteDataSource.insertReminder(
+        reminder,
+        operation.operationId,
+      );
+
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } on Exception catch (e) {
+      log(e.toString());
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
   Future<void> _syncRemoteExpenses() async {
     try {
       final remoteExpenses = await expenseRemoteDataSource.getExpenses();
@@ -293,6 +336,15 @@ class SyncEngineImpl implements SyncEngine {
       await budgetLocalDataSource.syncRemoteBudget(remoteBudget);
     } on Exception catch (e) {
       log('Error syncing remote budget: $e');
+    }
+  }
+
+  Future<void> _syncRemoteReminders() async {
+    try {
+      final remoteReminders = await remindersRemoteDataSource.getReminders();
+      await remindersLocalDataSource.syncRemoteReminders(remoteReminders);
+    } on Exception catch (e) {
+      log('Error syncing remote reminders: $e');
     }
   }
 
@@ -402,6 +454,29 @@ class SyncEngineImpl implements SyncEngine {
     }
   }
 
+  Future<void> _handleReminderUpdate(PendingOperationModel operation) async {
+    try {
+      final reminder = await remindersLocalDataSource.getReminderById(
+        operation.entityId,
+      );
+
+      if (reminder == null) {
+        await pendingOperationsLocalDataSource.deleteOperation(
+          operation.operationId,
+        );
+        return;
+      }
+
+      await remindersRemoteDataSource.updateReminder(reminder);
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } on Exception catch (e) {
+      log(e.toString());
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
   Future<void> _handleExpenseDelete(PendingOperationModel operation) async {
     try {
       await expenseRemoteDataSource.deleteExpense(operation.entityId);
@@ -438,6 +513,18 @@ class SyncEngineImpl implements SyncEngine {
   Future<void> _handleSavingDelete(PendingOperationModel operation) async {
     try {
       await savingsRemoteDataSource.deleteSaving(operation.entityId);
+      await pendingOperationsLocalDataSource.deleteOperation(
+        operation.operationId,
+      );
+    } on Exception catch (e) {
+      log(e.toString());
+      await pendingOperationsLocalDataSource.recordRetry(operation.operationId);
+    }
+  }
+
+  Future<void> _handleReminderDelete(PendingOperationModel operation) async {
+    try {
+      await remindersRemoteDataSource.deleteReminder(operation.entityId);
       await pendingOperationsLocalDataSource.deleteOperation(
         operation.operationId,
       );

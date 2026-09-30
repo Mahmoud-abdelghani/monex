@@ -11,6 +11,7 @@ import 'package:monex/core/local/database/tables/pending_operations_table.dart';
 import 'package:monex/core/local/database/enums/sync_enums.dart';
 import 'package:monex/core/local/database/converters/sync_enum_converter.dart';
 import 'package:monex/core/local/database/tables/budget_table.dart';
+import 'package:monex/core/local/database/tables/reminders_table.dart';
 import 'package:monex/core/local/database/tables/savings_table.dart';
 import 'package:monex/features/goals/domain/entities/goal_entity.dart';
 
@@ -25,7 +26,8 @@ part 'app_database.g.dart';
     IncomesTable,
     GoalsTable,
     SavingsTable,
-    BudgetTable
+    BudgetTable,
+    RemindersTable
   ],
 )
 class AppDatabase extends _$AppDatabase {

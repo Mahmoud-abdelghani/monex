@@ -41,6 +41,12 @@ import 'package:monex/features/income/presentation/cubit/add_income_cubit.dart';
 import 'package:monex/features/income/presentation/cubit/delete_income_cubit.dart';
 import 'package:monex/features/income/presentation/cubit/update_income_cubit.dart';
 import 'package:monex/features/income/presentation/cubit/watch_incomes_cubit.dart';
+import 'package:monex/features/reminders/di/reminders_dependency_injection.dart';
+import 'package:monex/features/reminders/presentation/cubit/add_reminder_cubit.dart';
+import 'package:monex/features/reminders/presentation/cubit/delete_reminder_cubit.dart';
+import 'package:monex/features/reminders/presentation/cubit/get_reminder_by_id_cubit.dart';
+import 'package:monex/features/reminders/presentation/cubit/update_reminder_cubit.dart';
+import 'package:monex/features/reminders/presentation/cubit/watch_reminder_cubit.dart';
 import 'package:monex/features/savings/di/savings_dependency_injection.dart';
 import 'package:monex/features/savings/presentation/cubit/add_saving_cubit.dart';
 import 'package:monex/features/savings/presentation/cubit/delete_saving_cubit.dart';
@@ -59,6 +65,7 @@ void setupDependencies() {
   registerGoalsDependencies();
   registerSavingsDependencies();
   registerBudgetDependencies();
+  registerRemindersDependencies();
 }
 
 void main() async {
@@ -170,6 +177,13 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => getIt<CreateBudgetCubit>()),
         BlocProvider(create: (context) => getIt<UpdatebudgetCubit>()),
         BlocProvider(create: (context) => getIt<GetCurrentBudgetCubit>()),
+        BlocProvider(create: (context) => getIt<AddReminderCubit>()),
+        BlocProvider(create: (context) => getIt<UpdateReminderCubit>()),
+        BlocProvider(create: (context) => getIt<DeleteReminderCubit>()),
+        BlocProvider(create: (context) => getIt<GetReminderByIdCubit>()),
+        BlocProvider(
+          create: (context) => getIt<WatchReminderCubit>()..watchReminders(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

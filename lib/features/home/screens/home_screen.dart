@@ -21,6 +21,10 @@ import 'package:monex/features/income/presentation/cubit/add_income_cubit.dart';
 import 'package:monex/features/income/presentation/cubit/delete_income_cubit.dart';
 import 'package:monex/features/income/presentation/cubit/update_income_cubit.dart';
 import 'package:monex/features/income/presentation/cubit/watch_incomes_cubit.dart';
+import 'package:monex/features/reminders/presentation/cubit/add_reminder_cubit.dart';
+import 'package:monex/features/reminders/presentation/cubit/delete_reminder_cubit.dart';
+import 'package:monex/features/reminders/presentation/cubit/update_reminder_cubit.dart';
+import 'package:monex/features/reminders/presentation/cubit/watch_reminder_cubit.dart';
 import 'package:monex/features/savings/presentation/cubit/add_saving_cubit.dart';
 import 'package:monex/features/savings/presentation/cubit/watch_savings_cubit.dart';
 import 'package:uuid/uuid.dart';
@@ -348,6 +352,81 @@ class _HomeScreenState extends State<HomeScreen> {
                       } else {
                         return const SizedBox.shrink();
                       }
+                    },
+                  ),
+                ),
+                Center(
+                  child: TextButton(
+                    onPressed: () async {
+                      // SyncEngineImpl(
+                      //   expenseLocalDataSource: getIt<ExpenseLocalDataSource>(),
+                      //   expenseRemoteDataSource: getIt<ExpenseRemoteDataSource>(),
+                      //   pendingOperationsLocalDataSource:
+                      //       getIt<PendingOperationsLocalDataSource>(),
+                      //   incomesLocalDataSource: getIt<IncomesLocalDataSource>(),
+                      //   incomeRemoteDataSource: getIt<IncomesRemoteDataSource>(),
+                      // ).sync();
+                      log('Adding Reminder');
+                      BlocProvider.of<AddReminderCubit>(context).addreminder(
+                        title: 'فلوس الجمعية',
+                        amount: 1000,
+                        frequency: ContributionPeriod.weekly,
+                        deadline: DateTime(2028),
+                      );
+                    },
+                    child: Text('Add Reminder'),
+                  ),
+                ),
+                SizedBox(
+                  width: ScreenSize.width,
+                  height: ScreenSize.height * 0.3,
+                  child: BlocBuilder<WatchReminderCubit, WatchReminderState>(
+                    builder: (context, state) {
+                      if (state is WatchReminderLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is WatchReminderFailure) {
+                        return Center(child: Text(state.message));
+                      } else if (state is WatchReminderSuccess) {
+                        final reminders = state.reminders;
+                        return ListView.builder(
+                          itemCount: reminders.length,
+                          itemBuilder: (context, index) {
+                            final reminder = reminders[index];
+                            return ListTile(
+                              title: Text(reminder.title),
+                              subtitle: Text('Amount: ${reminder.amount}'),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      BlocProvider.of<UpdateReminderCubit>(
+                                        context,
+                                      ).updatereminder(
+                                        id: reminder.id,
+                                        title: 'Updated reminder',
+                                        amount: 200000,
+                                        frequency: ContributionPeriod.weekly,
+                                        deadline: DateTime(2030),
+                                      );
+                                    },
+                                    icon: Icon(Icons.edit),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      BlocProvider.of<DeleteReminderCubit>(
+                                        context,
+                                      ).deletereminder(reminder.id);
+                                    },
+                                    icon: Icon(Icons.delete),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }
+                      return const SizedBox.shrink();
                     },
                   ),
                 ),

@@ -8,6 +8,7 @@ import 'package:monex/core/local/database/dao/expenses_dao.dart';
 import 'package:monex/core/local/database/dao/goals_dao.dart';
 import 'package:monex/core/local/database/dao/incomes_dao.dart';
 import 'package:monex/core/local/database/dao/pending_operations_dao.dart';
+import 'package:monex/core/local/database/dao/reminders_dao.dart';
 import 'package:monex/core/local/database/dao/savings_dao.dart';
 import 'package:monex/core/local/database/datasources/pending_operations_local_data_source.dart';
 import 'package:monex/core/local/database/datasources/pending_operations_local_data_source_impl.dart';
@@ -36,6 +37,10 @@ import 'package:monex/features/income/data/source/local/incomes_local_data_sourc
 import 'package:monex/features/income/data/source/local/incomes_local_data_source_impl.dart';
 import 'package:monex/features/income/data/source/remote/incomes_remote_data_source.dart';
 import 'package:monex/features/income/data/source/remote/incomes_remote_data_source_impl.dart';
+import 'package:monex/features/reminders/data/sources/local/reminders_local_data_source.dart';
+import 'package:monex/features/reminders/data/sources/local/reminders_local_data_source_impl.dart';
+import 'package:monex/features/reminders/data/sources/remote/reminders_remote_data_source.dart';
+import 'package:monex/features/reminders/data/sources/remote/reminders_remote_data_source_impl.dart';
 import 'package:monex/features/savings/data/source/local/savings_local_data_source.dart';
 import 'package:monex/features/savings/data/source/local/savings_local_data_source_impl.dart';
 import 'package:monex/features/savings/data/source/remote/savings_remote_data_source.dart';
@@ -130,6 +135,20 @@ void registerCoreDependencies() {
   getIt.registerLazySingleton<BudgetRemoteDataSource>(
     () => BudgetRemoteDataSourceImpl(getIt<SupabaseClient>()),
   );
+
+  getIt.registerLazySingleton<RemindersDao>(
+    () => RemindersDao(getIt<AppDatabase>()),
+  );
+  getIt.registerLazySingleton<RemindersLocalDataSource>(
+    () => RemindersLocalDataSourceImpl(
+      remindersDao: getIt<RemindersDao>(),
+      pendingOperationsDao: getIt<PendingOperationsDao>(),
+      appDatabase: getIt<AppDatabase>(),
+    ),
+  );
+  getIt.registerLazySingleton<RemindersRemoteDataSource>(
+    () => RemindersRemoteDataSourceImpl(getIt<SupabaseClient>()),
+  );
   getIt.registerLazySingleton<SyncEngine>(
     () => SyncEngineImpl(
       pendingOperationsLocalDataSource:
@@ -144,6 +163,8 @@ void registerCoreDependencies() {
       savingsLocalDataSource: getIt<SavingsLocalDataSource>(),
       budgetLocalDataSource: getIt<BudgetLocalDataSource>(),
       budgetRemoteDataSource: getIt<BudgetRemoteDataSource>(),
+      remindersRemoteDataSource: getIt<RemindersRemoteDataSource>(),
+      remindersLocalDataSource: getIt<RemindersLocalDataSource>(),
     ),
   );
   getIt.registerLazySingleton<SyncUsecase>(

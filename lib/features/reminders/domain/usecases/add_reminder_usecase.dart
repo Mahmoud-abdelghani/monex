@@ -1,23 +1,23 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:monex/core/di/uuid_container.dart';
 import 'package:monex/core/enums/contribution_period.dart';
 import 'package:monex/core/error/failure.dart';
-import 'package:monex/features/remainders/domain/entities/remainder_entity.dart';
-import 'package:monex/features/remainders/domain/repository/remainder_repository.dart';
+import 'package:monex/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:monex/features/reminders/domain/repository/reminder_repository.dart';
 
-class UpdateRemainderUsecase {
-  final RemainderRepository remainderRepository;
+class AddReminderUsecase {
+  final ReminderRepository reminderRepository;
 
-  UpdateRemainderUsecase(this.remainderRepository);
+  AddReminderUsecase(this.reminderRepository);
 
   Future<Either<Failure, void>> call({
-    required String id,
     required String title,
     required double amount,
     required ContributionPeriod frequency,
     required DateTime deadline,
-  }) => remainderRepository.updateRemainder(
-    RemainderEntity(
-      id: id,
+  }) => reminderRepository.addReminder(
+    ReminderEntity(
+      id: uuid.v4(),
       title: title,
       amount: amount,
       frequency: frequency,
