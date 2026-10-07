@@ -2,6 +2,8 @@ import 'package:monex/core/di/injection_container.dart';
 import 'package:monex/core/local/database/app_database.dart';
 import 'package:monex/core/local/database/dao/pending_operations_dao.dart';
 import 'package:monex/core/local/database/dao/reminders_dao.dart';
+import 'package:monex/core/notifications/notification_service.dart';
+import 'package:monex/core/notifications/recurrence/notification_schedule_calculator.dart';
 import 'package:monex/features/reminders/data/repository/reminders_repository_impl.dart';
 import 'package:monex/features/reminders/data/sources/local/reminders_local_data_source.dart';
 import 'package:monex/features/reminders/data/sources/local/reminders_local_data_source_impl.dart';
@@ -26,13 +28,17 @@ void registerRemindersDependencies() {
     () => RemindersRepositoryImpl(getIt<RemindersLocalDataSource>()),
   );
   getIt.registerLazySingleton<AddReminderUsecase>(
-    () => AddReminderUsecase(getIt<ReminderRepository>()),
+    () => AddReminderUsecase(reminderRepository: getIt<ReminderRepository>(), notificationService: getIt<NotificationService>(), notificationScheduleCalculator: getIt<NotificationScheduleCalculator>()),
   );
   getIt.registerLazySingleton<UpdateReminderUsecase>(
-    () => UpdateReminderUsecase(getIt<ReminderRepository>()),
+    () => UpdateReminderUsecase( reminderRepository: getIt<ReminderRepository>(), notificationService: getIt<NotificationService>(), notificationScheduleCalculator: getIt<NotificationScheduleCalculator>() ),
   );
   getIt.registerLazySingleton<DeleteReminderUsecase>(
-    () => DeleteReminderUsecase(getIt<ReminderRepository>()),
+    () => DeleteReminderUsecase(
+      reminderRepository: getIt<ReminderRepository>(),
+      notificationService: getIt<NotificationService>(),
+      notificationScheduleCalculator: getIt<NotificationScheduleCalculator>(),
+    ),
   );
   getIt.registerLazySingleton<GetReminderByIdUsecase>(
     () => GetReminderByIdUsecase(getIt<ReminderRepository>()),

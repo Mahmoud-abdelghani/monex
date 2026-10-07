@@ -15,6 +15,7 @@ class UpdateReminderCubit extends Cubit<UpdateReminderState> {
     required String title,
     required double amount,
     required ContributionPeriod frequency,
+    required DateTime scheduleDate,
     required DateTime deadline,
   }) async {
     emit(UpdateReminderLoading());
@@ -23,6 +24,7 @@ class UpdateReminderCubit extends Cubit<UpdateReminderState> {
       title: title,
       amount: amount,
       frequency: frequency,
+      scheduleDate: scheduleDate,
       deadline: deadline,
     );
     result.fold(

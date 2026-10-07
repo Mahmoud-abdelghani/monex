@@ -368,6 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       // ).sync();
                       log('Adding Reminder');
                       BlocProvider.of<AddReminderCubit>(context).addreminder(
+                        scheduleDate: DateTime.now(),
                         title: 'فلوس الجمعية',
                         amount: 1000,
                         frequency: ContributionPeriod.weekly,
@@ -405,8 +406,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ).updatereminder(
                                         id: reminder.id,
                                         title: 'Updated reminder',
+                                        scheduleDate: DateTime.now(),
                                         amount: 200000,
-                                        frequency: ContributionPeriod.weekly,
+                                        frequency: ContributionPeriod.daily,
                                         deadline: DateTime(2030),
                                       );
                                     },

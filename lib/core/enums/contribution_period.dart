@@ -1,6 +1,1 @@
-enum ContributionPeriod{
-  daily,
-  weekly,
-  monthly,
-  yearly
-}
+enum ContributionPeriod { none, daily, weekly, monthly, yearly }

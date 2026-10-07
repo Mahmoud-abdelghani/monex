@@ -37,6 +37,7 @@ class RemindersRemoteDataSourceImpl implements RemindersRemoteDataSource {
         'p_title': data.title,
         'p_amount': data.amount,
         'p_frequency': data.frequency.index,
+        'p_schedule_date': data.scheduleDate.toUtc().toIso8601String(),
         'p_deadline': data.deadline.toUtc().toIso8601String(),
       },
     );

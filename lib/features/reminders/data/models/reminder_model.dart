@@ -6,6 +6,7 @@ class ReminderModel {
   final String title;
   final double amount;
   final ContributionPeriod frequency;
+  final DateTime scheduleDate;
   final DateTime deadline;
 
   ReminderModel({
@@ -13,7 +14,7 @@ class ReminderModel {
     required this.title,
     required this.amount,
     required this.frequency,
-    required this.deadline,
+    required this.deadline, required this.scheduleDate,
   });
 
   factory ReminderModel.fromEntity(ReminderEntity entity) => ReminderModel(
@@ -21,7 +22,7 @@ class ReminderModel {
     title: entity.title,
     amount: entity.amount,
     frequency: entity.frequency,
-    deadline: entity.deadline,
+    deadline: entity.deadline, scheduleDate: entity.scheduleDate,
   );
 
   ReminderEntity toEntity() => ReminderEntity(
@@ -29,7 +30,7 @@ class ReminderModel {
     title: title,
     amount: amount,
     frequency: frequency,
-    deadline: deadline,
+    deadline: deadline, scheduleDate: scheduleDate,
   );
 
   factory ReminderModel.fromJson(Map<String, dynamic> json) => ReminderModel(
@@ -37,7 +38,7 @@ class ReminderModel {
     title: json['title'] as String,
     amount: json['amount'] as double,
     frequency: ContributionPeriod.values[json['frequency'] as int],
-    deadline: DateTime.parse(json['deadline'] as String),
+    deadline: DateTime.parse(json['deadline'] as String), scheduleDate: DateTime.parse(json['scheduleDate'] as String),
   );
 
   Map<String, dynamic> toJson() => {
@@ -46,5 +47,6 @@ class ReminderModel {
     'amount': amount,
     'frequency': frequency.index,
     'deadline': deadline.toIso8601String(),
+    'scheduleDate': scheduleDate.toIso8601String(),
   };
 }

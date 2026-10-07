@@ -5,6 +5,7 @@ class ReminderEntity {
   final String title;
   final double amount;
   final ContributionPeriod frequency;
+  final DateTime scheduleDate;
   final DateTime deadline;
 
   ReminderEntity({
@@ -12,6 +13,6 @@ class ReminderEntity {
     required this.title,
     required this.amount,
     required this.frequency,
-    required this.deadline,
+    required this.deadline, required this.scheduleDate,
   });
 }

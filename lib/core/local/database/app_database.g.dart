@@ -2978,6 +2978,17 @@ class $RemindersTableTable extends RemindersTable
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _scheduleDateMeta = const VerificationMeta(
+    'scheduleDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> scheduleDate = GeneratedColumn<DateTime>(
+    'schedule_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2985,6 +2996,7 @@ class $RemindersTableTable extends RemindersTable
     amount,
     frequency,
     deadline,
+    scheduleDate,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3027,6 +3039,17 @@ class $RemindersTableTable extends RemindersTable
     } else if (isInserting) {
       context.missing(_deadlineMeta);
     }
+    if (data.containsKey('schedule_date')) {
+      context.handle(
+        _scheduleDateMeta,
+        scheduleDate.isAcceptableOrUnknown(
+          data['schedule_date']!,
+          _scheduleDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_scheduleDateMeta);
+    }
     return context;
   }
 
@@ -3058,6 +3081,10 @@ class $RemindersTableTable extends RemindersTable
         DriftSqlType.dateTime,
         data['${effectivePrefix}deadline'],
       )!,
+      scheduleDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}schedule_date'],
+      )!,
     );
   }
 
@@ -3077,12 +3104,14 @@ class RemindersTableData extends DataClass
   final double amount;
   final ContributionPeriod frequency;
   final DateTime deadline;
+  final DateTime scheduleDate;
   const RemindersTableData({
     required this.id,
     required this.title,
     required this.amount,
     required this.frequency,
     required this.deadline,
+    required this.scheduleDate,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3096,6 +3125,7 @@ class RemindersTableData extends DataClass
       );
     }
     map['deadline'] = Variable<DateTime>(deadline);
+    map['schedule_date'] = Variable<DateTime>(scheduleDate);
     return map;
   }
 
@@ -3106,6 +3136,7 @@ class RemindersTableData extends DataClass
       amount: Value(amount),
       frequency: Value(frequency),
       deadline: Value(deadline),
+      scheduleDate: Value(scheduleDate),
     );
   }
 
@@ -3120,6 +3151,7 @@ class RemindersTableData extends DataClass
       amount: serializer.fromJson<double>(json['amount']),
       frequency: serializer.fromJson<ContributionPeriod>(json['frequency']),
       deadline: serializer.fromJson<DateTime>(json['deadline']),
+      scheduleDate: serializer.fromJson<DateTime>(json['scheduleDate']),
     );
   }
   @override
@@ -3131,6 +3163,7 @@ class RemindersTableData extends DataClass
       'amount': serializer.toJson<double>(amount),
       'frequency': serializer.toJson<ContributionPeriod>(frequency),
       'deadline': serializer.toJson<DateTime>(deadline),
+      'scheduleDate': serializer.toJson<DateTime>(scheduleDate),
     };
   }
 
@@ -3140,12 +3173,14 @@ class RemindersTableData extends DataClass
     double? amount,
     ContributionPeriod? frequency,
     DateTime? deadline,
+    DateTime? scheduleDate,
   }) => RemindersTableData(
     id: id ?? this.id,
     title: title ?? this.title,
     amount: amount ?? this.amount,
     frequency: frequency ?? this.frequency,
     deadline: deadline ?? this.deadline,
+    scheduleDate: scheduleDate ?? this.scheduleDate,
   );
   RemindersTableData copyWithCompanion(RemindersTableCompanion data) {
     return RemindersTableData(
@@ -3154,6 +3189,9 @@ class RemindersTableData extends DataClass
       amount: data.amount.present ? data.amount.value : this.amount,
       frequency: data.frequency.present ? data.frequency.value : this.frequency,
       deadline: data.deadline.present ? data.deadline.value : this.deadline,
+      scheduleDate: data.scheduleDate.present
+          ? data.scheduleDate.value
+          : this.scheduleDate,
     );
   }
 
@@ -3164,13 +3202,15 @@ class RemindersTableData extends DataClass
           ..write('title: $title, ')
           ..write('amount: $amount, ')
           ..write('frequency: $frequency, ')
-          ..write('deadline: $deadline')
+          ..write('deadline: $deadline, ')
+          ..write('scheduleDate: $scheduleDate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, amount, frequency, deadline);
+  int get hashCode =>
+      Object.hash(id, title, amount, frequency, deadline, scheduleDate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3179,7 +3219,8 @@ class RemindersTableData extends DataClass
           other.title == this.title &&
           other.amount == this.amount &&
           other.frequency == this.frequency &&
-          other.deadline == this.deadline);
+          other.deadline == this.deadline &&
+          other.scheduleDate == this.scheduleDate);
 }
 
 class RemindersTableCompanion extends UpdateCompanion<RemindersTableData> {
@@ -3188,6 +3229,7 @@ class RemindersTableCompanion extends UpdateCompanion<RemindersTableData> {
   final Value<double> amount;
   final Value<ContributionPeriod> frequency;
   final Value<DateTime> deadline;
+  final Value<DateTime> scheduleDate;
   final Value<int> rowid;
   const RemindersTableCompanion({
     this.id = const Value.absent(),
@@ -3195,6 +3237,7 @@ class RemindersTableCompanion extends UpdateCompanion<RemindersTableData> {
     this.amount = const Value.absent(),
     this.frequency = const Value.absent(),
     this.deadline = const Value.absent(),
+    this.scheduleDate = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RemindersTableCompanion.insert({
@@ -3203,18 +3246,21 @@ class RemindersTableCompanion extends UpdateCompanion<RemindersTableData> {
     required double amount,
     required ContributionPeriod frequency,
     required DateTime deadline,
+    required DateTime scheduleDate,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        title = Value(title),
        amount = Value(amount),
        frequency = Value(frequency),
-       deadline = Value(deadline);
+       deadline = Value(deadline),
+       scheduleDate = Value(scheduleDate);
   static Insertable<RemindersTableData> custom({
     Expression<String>? id,
     Expression<String>? title,
     Expression<double>? amount,
     Expression<int>? frequency,
     Expression<DateTime>? deadline,
+    Expression<DateTime>? scheduleDate,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3223,6 +3269,7 @@ class RemindersTableCompanion extends UpdateCompanion<RemindersTableData> {
       if (amount != null) 'amount': amount,
       if (frequency != null) 'frequency': frequency,
       if (deadline != null) 'deadline': deadline,
+      if (scheduleDate != null) 'schedule_date': scheduleDate,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3233,6 +3280,7 @@ class RemindersTableCompanion extends UpdateCompanion<RemindersTableData> {
     Value<double>? amount,
     Value<ContributionPeriod>? frequency,
     Value<DateTime>? deadline,
+    Value<DateTime>? scheduleDate,
     Value<int>? rowid,
   }) {
     return RemindersTableCompanion(
@@ -3241,6 +3289,7 @@ class RemindersTableCompanion extends UpdateCompanion<RemindersTableData> {
       amount: amount ?? this.amount,
       frequency: frequency ?? this.frequency,
       deadline: deadline ?? this.deadline,
+      scheduleDate: scheduleDate ?? this.scheduleDate,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3265,6 +3314,9 @@ class RemindersTableCompanion extends UpdateCompanion<RemindersTableData> {
     if (deadline.present) {
       map['deadline'] = Variable<DateTime>(deadline.value);
     }
+    if (scheduleDate.present) {
+      map['schedule_date'] = Variable<DateTime>(scheduleDate.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3279,6 +3331,7 @@ class RemindersTableCompanion extends UpdateCompanion<RemindersTableData> {
           ..write('amount: $amount, ')
           ..write('frequency: $frequency, ')
           ..write('deadline: $deadline, ')
+          ..write('scheduleDate: $scheduleDate, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5000,6 +5053,7 @@ typedef $$RemindersTableTableCreateCompanionBuilder =
       required double amount,
       required ContributionPeriod frequency,
       required DateTime deadline,
+      required DateTime scheduleDate,
       Value<int> rowid,
     });
 typedef $$RemindersTableTableUpdateCompanionBuilder =
@@ -5009,6 +5063,7 @@ typedef $$RemindersTableTableUpdateCompanionBuilder =
       Value<double> amount,
       Value<ContributionPeriod> frequency,
       Value<DateTime> deadline,
+      Value<DateTime> scheduleDate,
       Value<int> rowid,
     });
 
@@ -5046,6 +5101,11 @@ class $$RemindersTableTableFilterComposer
     column: $table.deadline,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<DateTime> get scheduleDate => $composableBuilder(
+    column: $table.scheduleDate,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$RemindersTableTableOrderingComposer
@@ -5081,6 +5141,11 @@ class $$RemindersTableTableOrderingComposer
     column: $table.deadline,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get scheduleDate => $composableBuilder(
+    column: $table.scheduleDate,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RemindersTableTableAnnotationComposer
@@ -5106,6 +5171,11 @@ class $$RemindersTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get deadline =>
       $composableBuilder(column: $table.deadline, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get scheduleDate => $composableBuilder(
+    column: $table.scheduleDate,
+    builder: (column) => column,
+  );
 }
 
 class $$RemindersTableTableTableManager
@@ -5150,6 +5220,7 @@ class $$RemindersTableTableTableManager
                 Value<double> amount = const Value.absent(),
                 Value<ContributionPeriod> frequency = const Value.absent(),
                 Value<DateTime> deadline = const Value.absent(),
+                Value<DateTime> scheduleDate = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RemindersTableCompanion(
                 id: id,
@@ -5157,6 +5228,7 @@ class $$RemindersTableTableTableManager
                 amount: amount,
                 frequency: frequency,
                 deadline: deadline,
+                scheduleDate: scheduleDate,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5166,6 +5238,7 @@ class $$RemindersTableTableTableManager
                 required double amount,
                 required ContributionPeriod frequency,
                 required DateTime deadline,
+                required DateTime scheduleDate,
                 Value<int> rowid = const Value.absent(),
               }) => RemindersTableCompanion.insert(
                 id: id,
@@ -5173,6 +5246,7 @@ class $$RemindersTableTableTableManager
                 amount: amount,
                 frequency: frequency,
                 deadline: deadline,
+                scheduleDate: scheduleDate,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

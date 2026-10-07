@@ -9,6 +9,7 @@ extension ReminderLocalMapper on ReminderModel {
     amount: Value(amount),
     frequency: Value(frequency),
     deadline: Value(deadline),
+    scheduleDate: Value(scheduleDate),
   );
 }
 
@@ -18,6 +19,6 @@ extension RemindersTableDataMapper on RemindersTableData {
     title: title,
     amount: amount,
     frequency: frequency,
-    deadline: deadline,
+    deadline: deadline, scheduleDate: scheduleDate,
   );
 }

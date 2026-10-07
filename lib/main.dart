@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monex/core/di/core_dependency_injection.dart';
 import 'package:monex/core/di/injection_container.dart';
 import 'package:monex/core/local/database/dao/budget_dao.dart';
+import 'package:monex/core/notifications/di/notifications_dependency_injection.dart';
+import 'package:monex/core/notifications/notification_service.dart';
 import 'package:monex/core/sync/sync_coordinator.dart';
 import 'package:monex/core/sync/sync_engine.dart';
 import 'package:monex/features/auth/di/auth_depenency_injection.dart';
@@ -59,6 +61,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void setupDependencies() {
   registerCoreDependencies();
+  registerNotificationsDependencies();
   registerAuthDependencies();
   registerExpenseDependencies();
   registerIncomesDependencies();
@@ -109,8 +112,9 @@ void main() async {
     }
   });
 
-  final syncCoordinator = getIt<SyncCoordinator>();
+  await getIt<NotificationService>().initialize();
 
+  final syncCoordinator = getIt<SyncCoordinator>();
   await syncCoordinator.start();
 
   runApp(const MyApp());
@@ -256,6 +260,7 @@ class MyApp extends StatelessWidget {
         if (await getIt<BudgetDao>().getCurrentBudget() == null) {
           return const CreateBudgetScreen();
         } else {
+          getIt<WatchBudgetCubit>().watchBudget();
           return const HomeScreen();
         }
       } else {

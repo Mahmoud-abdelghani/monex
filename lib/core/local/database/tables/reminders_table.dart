@@ -8,6 +8,7 @@ class RemindersTable extends Table {
   IntColumn get frequency =>
       integer().map(const ContributionPeriodConverter())();
   DateTimeColumn get deadline => dateTime()();
+  DateTimeColumn get scheduleDate => dateTime()();
 
   @override
   Set<Column> get primaryKey => {id};

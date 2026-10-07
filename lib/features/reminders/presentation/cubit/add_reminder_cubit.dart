@@ -14,13 +14,16 @@ class AddReminderCubit extends Cubit<AddReminderState> {
     required double amount,
     required ContributionPeriod frequency,
     required DateTime deadline,
+    required DateTime scheduleDate,
   }) async {
     emit(AddReminderLoading());
     final result = await addReminderUsecase(
+
       title: title,
       amount: amount,
       frequency: frequency,
       deadline: deadline,
+      scheduleDate: scheduleDate
     );
     result.fold(
       (l) => emit(AddReminderFailure(l.message)),
