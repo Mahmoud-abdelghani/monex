@@ -3,6 +3,7 @@ import 'package:monex/core/enums/contribution_period.dart';
 import 'package:monex/core/error/error_message_extraction.dart';
 import 'package:monex/core/error/failure.dart';
 import 'package:monex/core/error/failures/notification_failure.dart';
+import 'package:monex/core/error/failures/validation_failure.dart';
 import 'package:monex/core/helpers/notification_reminder_helper.dart';
 import 'package:monex/core/notifications/notification_request.dart';
 import 'package:monex/core/notifications/notification_service.dart';
@@ -10,6 +11,10 @@ import 'package:monex/core/notifications/recurrence/notification_schedule_calcul
 import 'package:monex/features/reminders/data/mappers/reminder_notification_mapper.dart';
 import 'package:monex/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:monex/features/reminders/domain/repository/reminder_repository.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_amount.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_deadline.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_schedule_date.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_title.dart';
 
 class UpdateReminderUsecase {
   final ReminderRepository reminderRepository;
@@ -30,14 +35,19 @@ class UpdateReminderUsecase {
     required DateTime deadline,
     required DateTime scheduleDate,
   }) async {
-    final reminderEntity = ReminderEntity(
-      id: id,
-      title: title,
-      amount: amount,
-      frequency: frequency,
-      deadline: deadline,
-      scheduleDate: scheduleDate,
-    );
+    ReminderEntity reminderEntity;
+    try {
+      reminderEntity = ReminderEntity(
+        id: id,
+        title: ReminderTitle(title),
+        amount: ReminderAmount(amount),
+        frequency: frequency,
+        deadline: ReminderDeadline(deadline),
+        scheduleDate: ReminderScheduleDate(scheduleDate),
+      );
+    } on ArgumentError catch (e) {
+      return Left(ValidationFailure(extractErrorMessage(e.message)));
+    }
 
     final oldReminderResult = await reminderRepository.getReminderById(id);
 
@@ -51,7 +61,10 @@ class UpdateReminderUsecase {
       return Left(NotificationFailure('Reminder not found'));
     }
 
-    final oldScheduleIds = NotificationReminderHelper.getScheduleIds(oldReminder, notificationScheduleCalculator);
+    final oldScheduleIds = NotificationReminderHelper.getScheduleIds(
+      oldReminder,
+      notificationScheduleCalculator,
+    );
 
     final updateResult = await reminderRepository.updateReminder(
       reminderEntity,
@@ -71,27 +84,28 @@ class UpdateReminderUsecase {
       final newSchedules = notificationScheduleCalculator.calculateSchedules(
         NotificationRequest(
           id: reminderEntity.id,
-          title: reminderEntity.title,
+          title: reminderEntity.title.value,
           body:
               'Reminder for ${reminderEntity.title} amount ${reminderEntity.amount}',
-          scheduleDate: reminderEntity.scheduleDate,
+          scheduleDate: reminderEntity.scheduleDate.value,
           recurrence: reminderEntity.frequency.toNotificationRecurrence(),
-          endDate: reminderEntity.deadline,
+          endDate: reminderEntity.deadline.value,
         ),
       );
 
       for (final schedule in newSchedules) {
+        if (schedule.isBefore(DateTime.now())) continue;
         final notificationId =
             '${reminderEntity.id}-${schedule.toIso8601String()}';
 
         final notificationRequest = NotificationRequest(
           id: notificationId,
-          title: reminderEntity.title,
+          title: reminderEntity.title.value,
           body:
               'Reminder for ${reminderEntity.title} amount ${reminderEntity.amount}',
           scheduleDate: schedule,
           recurrence: reminderEntity.frequency.toNotificationRecurrence(),
-          endDate: reminderEntity.deadline,
+          endDate: reminderEntity.deadline.value,
         );
 
         await notificationService.scheduleNotification(notificationRequest);
@@ -112,6 +126,4 @@ class UpdateReminderUsecase {
 
     return const Right(null);
   }
-
- 
 }

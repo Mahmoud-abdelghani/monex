@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:monex/core/screen_size.dart';
 import 'package:monex/features/auth/presentation/widgets/auth_button.dart';
-import 'package:monex/features/home/screens/home_screen.dart';
+import 'package:monex/features/home/presentation/screens/home_screen.dart';
 
 class PasswordUpdatedScreen extends StatefulWidget {
   const PasswordUpdatedScreen({super.key});

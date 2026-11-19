@@ -21,7 +21,6 @@ import 'package:monex/features/auth/presentation/screens/register_screen.dart';
 import 'package:monex/features/auth/presentation/screens/reset_password_screen.dart';
 import 'package:monex/features/auth/presentation/screens/verification_screen.dart';
 import 'package:monex/features/budget/di/budget_dependency_injection.dart';
-import 'package:monex/features/budget/domain/usecase/get_current_budget_usecase.dart';
 import 'package:monex/features/budget/presentation/cubit/create_budget_cubit.dart';
 import 'package:monex/features/budget/presentation/cubit/get_current_budget_cubit.dart';
 import 'package:monex/features/budget/presentation/cubit/update_budget_cubit.dart';
@@ -36,8 +35,8 @@ import 'package:monex/features/goals/presentation/cubit/complete_goal_cubit.dart
 import 'package:monex/features/goals/presentation/cubit/delete_goal_cubit.dart';
 import 'package:monex/features/goals/presentation/cubit/update_goal_cubit.dart';
 import 'package:monex/features/goals/presentation/cubit/watch_goal_cubit.dart';
-import 'package:monex/features/home/screens/create_budget_screen.dart';
-import 'package:monex/features/home/screens/home_screen.dart';
+import 'package:monex/features/home/presentation/screens/create_budget_screen.dart';
+import 'package:monex/features/home/presentation/screens/home_screen.dart';
 import 'package:monex/features/income/di/incomes_dependency_injection.dart';
 import 'package:monex/features/income/presentation/cubit/add_income_cubit.dart';
 import 'package:monex/features/income/presentation/cubit/delete_income_cubit.dart';
@@ -47,8 +46,11 @@ import 'package:monex/features/reminders/di/reminders_dependency_injection.dart'
 import 'package:monex/features/reminders/presentation/cubit/add_reminder_cubit.dart';
 import 'package:monex/features/reminders/presentation/cubit/delete_reminder_cubit.dart';
 import 'package:monex/features/reminders/presentation/cubit/get_reminder_by_id_cubit.dart';
+import 'package:monex/features/reminders/presentation/cubit/reschedule_reminder_cubit.dart';
 import 'package:monex/features/reminders/presentation/cubit/update_reminder_cubit.dart';
 import 'package:monex/features/reminders/presentation/cubit/watch_reminder_cubit.dart';
+import 'package:monex/features/reminders/presentation/screens/add_reminder_screen.dart';
+import 'package:monex/features/reminders/presentation/screens/reminders_list_screen.dart';
 import 'package:monex/features/savings/di/savings_dependency_injection.dart';
 import 'package:monex/features/savings/presentation/cubit/add_saving_cubit.dart';
 import 'package:monex/features/savings/presentation/cubit/delete_saving_cubit.dart';
@@ -188,6 +190,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => getIt<WatchReminderCubit>()..watchReminders(),
         ),
+        BlocProvider(create: (context) => getIt<RescheduleReminderCubit>()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -232,6 +235,12 @@ class MyApp extends StatelessWidget {
             case CreateBudgetScreen.routeName:
               return _fadeRoute(const CreateBudgetScreen());
 
+            case RemindersListScreen.routeName:
+              return _fadeRoute(const RemindersListScreen());
+
+            case AddReminderScreen.routeName:
+              return _fadeRoute(const AddReminderScreen());
+
             default:
               return null;
           }
@@ -264,6 +273,7 @@ class MyApp extends StatelessWidget {
           return const HomeScreen();
         }
       } else {
+        getIt<WatchBudgetCubit>().watchBudget();
         return const HomeScreen();
       }
     } else {

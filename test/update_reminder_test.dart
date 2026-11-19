@@ -11,13 +11,17 @@ import 'package:monex/features/budget/domain/usecase/update_budget_usecase.dart'
 import 'package:monex/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:monex/features/reminders/domain/usecases/add_reminder_usecase.dart';
 import 'package:monex/features/reminders/domain/usecases/update_reminder_usecase.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_amount.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_deadline.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_schedule_date.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_title.dart';
 
 import 'add_reminder_test.dart';
 
 void main() {
   setUpAll(() {
     registerFallbackValue(
-      ReminderEntity(
+      createTestReminder(
         id: 'fallback-id',
         title: 'fallback-title',
         amount: 0,
@@ -68,7 +72,7 @@ void main() {
     () async {
       // Arrange
 
-      final oldReminder = ReminderEntity(
+      final oldReminder = createTestReminder(
         id: 'reminder-1',
         title: 'Old title',
         amount: 100,
@@ -160,7 +164,7 @@ void main() {
     () async {
       // Arrange
 
-      final oldReminder = ReminderEntity(
+      final oldReminder = createTestReminder(
         id: 'reminder-1',
         title: 'Old title',
         amount: 100,
@@ -249,7 +253,7 @@ void main() {
     () async {
       // Arrange
 
-      final oldReminder = ReminderEntity(
+      final oldReminder = createTestReminder(
         id: 'reminder-1',
         title: 'Old title',
         amount: 100,
@@ -304,7 +308,7 @@ void main() {
     () async {
       // Arrange
 
-      final oldReminder = ReminderEntity(
+      final oldReminder = createTestReminder(
         id: 'reminder-1',
         title: 'Old title',
         amount: 100,
@@ -359,7 +363,7 @@ void main() {
     () async {
       // Arrange
 
-      final oldReminder = ReminderEntity(
+      final oldReminder = createTestReminder(
         id: 'reminder-1',
         title: 'Old title',
         amount: 100,
@@ -458,4 +462,29 @@ void main() {
     },
   );
   ;
+}
+
+ReminderEntity createTestReminder({
+  String id = 'reminder-1',
+  String title = 'Old title',
+  double amount = 100,
+  ContributionPeriod frequency = ContributionPeriod.daily,
+  DateTime? scheduleDate,
+  DateTime? deadline,
+}) {
+  final now = DateTime.now();
+
+  final reminderScheduleDate = scheduleDate ?? now.add(const Duration(days: 2));
+
+  final reminderDeadline =
+      deadline ?? reminderScheduleDate.add(const Duration(days: 2));
+
+  return ReminderEntity(
+    id: id,
+    title: ReminderTitle(title),
+    amount: ReminderAmount(amount),
+    frequency: frequency,
+    scheduleDate: ReminderScheduleDate(reminderScheduleDate),
+    deadline: ReminderDeadline(reminderDeadline),
+  );
 }

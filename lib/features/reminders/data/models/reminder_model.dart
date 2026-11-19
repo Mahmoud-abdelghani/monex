@@ -1,5 +1,9 @@
 import 'package:monex/core/enums/contribution_period.dart';
 import 'package:monex/features/reminders/domain/entities/reminder_entity.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_amount.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_deadline.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_schedule_date.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_title.dart';
 
 class ReminderModel {
   final String id;
@@ -14,23 +18,26 @@ class ReminderModel {
     required this.title,
     required this.amount,
     required this.frequency,
-    required this.deadline, required this.scheduleDate,
+    required this.deadline,
+    required this.scheduleDate,
   });
 
   factory ReminderModel.fromEntity(ReminderEntity entity) => ReminderModel(
     id: entity.id,
-    title: entity.title,
-    amount: entity.amount,
+    title: entity.title.value,
+    amount: entity.amount.value,
     frequency: entity.frequency,
-    deadline: entity.deadline, scheduleDate: entity.scheduleDate,
+    deadline: entity.deadline.value,
+    scheduleDate: entity.scheduleDate.value,
   );
 
   ReminderEntity toEntity() => ReminderEntity(
     id: id,
-    title: title,
-    amount: amount,
+    title: ReminderTitle(title),
+    amount: ReminderAmount(amount),
     frequency: frequency,
-    deadline: deadline, scheduleDate: scheduleDate,
+    deadline: ReminderDeadline(deadline),
+    scheduleDate: ReminderScheduleDate(scheduleDate),
   );
 
   factory ReminderModel.fromJson(Map<String, dynamic> json) => ReminderModel(
@@ -38,7 +45,8 @@ class ReminderModel {
     title: json['title'] as String,
     amount: json['amount'] as double,
     frequency: ContributionPeriod.values[json['frequency'] as int],
-    deadline: DateTime.parse(json['deadline'] as String), scheduleDate: DateTime.parse(json['scheduleDate'] as String),
+    deadline: DateTime.parse(json['deadline'] as String),
+    scheduleDate: DateTime.parse(json['schedule_date'] as String),
   );
 
   Map<String, dynamic> toJson() => {

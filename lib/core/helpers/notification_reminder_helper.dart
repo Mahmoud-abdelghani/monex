@@ -10,11 +10,11 @@ class NotificationReminderHelper {
   ) {
     final notificationRequest = NotificationRequest(
       id: reminder.id,
-      title: reminder.title,
+      title: reminder.title.value,
       body: 'Reminder for ${reminder.title} amount ${reminder.amount}',
-      scheduleDate: reminder.scheduleDate,
+      scheduleDate: reminder.scheduleDate.value,
       recurrence: reminder.frequency.toNotificationRecurrence(),
-      endDate: reminder.deadline,
+      endDate: reminder.deadline.value,
     );
 
     final schedules = notificationScheduleCalculator.calculateSchedules(

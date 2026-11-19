@@ -9,6 +9,10 @@ import 'package:monex/core/notifications/recurrence/notification_schedule_calcul
 import 'package:monex/core/notifications/recurrence/notification_schedule_calculator_impl.dart';
 import 'package:monex/features/reminders/domain/entities/reminder_entity.dart';
 import 'package:monex/features/reminders/domain/usecases/delete_reminder_usecase.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_amount.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_deadline.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_schedule_date.dart';
+import 'package:monex/features/reminders/domain/value_objects/reminder_title.dart';
 
 import 'add_reminder_test.dart';
 
@@ -17,11 +21,11 @@ void main() {
     registerFallbackValue(
       ReminderEntity(
         id: 'fallback-id',
-        title: 'fallback-title',
-        amount: 0,
+        title:ReminderTitle( 'fallback-title'),
+        amount: ReminderAmount(400),
         frequency: ContributionPeriod.none,
-        deadline: DateTime(2099, 1, 1),
-        scheduleDate: DateTime(2099, 1, 1),
+        deadline:ReminderDeadline( DateTime(2099, 1, 1)),
+        scheduleDate:ReminderScheduleDate( DateTime(2099, 1, 1)) ,
       ),
     );
 
@@ -66,11 +70,11 @@ void main() {
     () async {
       final oldReminder = ReminderEntity(
         id: 'reminder-id',
-        title: 'title',
-        amount: 400,
+        title:ReminderTitle( 'title'), 
+        amount:   ReminderAmount(400),
         frequency: ContributionPeriod.daily,
-        deadline: DateTime(2026, 10, 10, 10, 30),
-        scheduleDate: DateTime(2026, 10, 7, 10, 30),
+        deadline: ReminderDeadline(DateTime(2026, 10, 10, 10, 30)),
+        scheduleDate: ReminderScheduleDate(DateTime(2026, 10, 7, 10, 30)),
       );
 
       when(
@@ -104,11 +108,11 @@ void main() {
     () async {
       final oldReminder = ReminderEntity(
         id: 'reminder-id',
-        title: 'title',
-        amount: 400,
+        title: ReminderTitle('title'),
+        amount: ReminderAmount(400),
         frequency: ContributionPeriod.daily,
-        deadline: DateTime(2026, 10, 10, 10, 30),
-        scheduleDate: DateTime(2026, 10, 7, 10, 30),
+        deadline: ReminderDeadline(DateTime(2026, 10, 10, 10, 30)),
+        scheduleDate: ReminderScheduleDate(DateTime(2026, 10, 7, 10, 30)),
       );
 
       when(
@@ -134,11 +138,11 @@ void main() {
     () async {
       final oldReminder = ReminderEntity(
         id: 'reminder-id',
-        title: 'title',
-        amount: 400,
+        title: ReminderTitle('title'),
+        amount: ReminderAmount(400),
         frequency: ContributionPeriod.daily,
-        deadline: DateTime(2026, 10, 10, 10, 30),
-        scheduleDate: DateTime(2026, 10, 7, 10, 30),
+        deadline: ReminderDeadline(DateTime(2026, 10, 10, 10, 30)),
+        scheduleDate: ReminderScheduleDate(DateTime(2026, 10, 7, 10, 30)),
       );
 
       when(
@@ -166,11 +170,11 @@ void main() {
     () async {
       final oldReminder = ReminderEntity(
         id: 'reminder-id',
-        title: 'title',
-        amount: 400,
+        title: ReminderTitle('title'),
+        amount: ReminderAmount(400),
         frequency: ContributionPeriod.daily,
-        deadline: DateTime(2026, 10, 10, 10, 30),
-        scheduleDate: DateTime(2026, 10, 7, 10, 30),
+        deadline: ReminderDeadline(DateTime(2026, 10, 10, 10, 30)),
+        scheduleDate: ReminderScheduleDate(DateTime(2026, 10, 7, 10, 30)),
       );
 
       when(
@@ -223,11 +227,11 @@ void main() {
     () async {
       final oldReminder = ReminderEntity(
         id: 'reminder-id',
-        title: 'title',
-        amount: 400,
+        title: ReminderTitle('title'),
+        amount: ReminderAmount(400),
         frequency: ContributionPeriod.daily,
-        deadline: DateTime(2026, 10, 10, 10, 30),
-        scheduleDate: DateTime(2026, 10, 7, 10, 30),
+        deadline:ReminderDeadline( DateTime(2026, 10, 10, 10, 30)),
+        scheduleDate:ReminderScheduleDate( DateTime(2026, 10, 7, 10, 30)),
       );
 
       when(

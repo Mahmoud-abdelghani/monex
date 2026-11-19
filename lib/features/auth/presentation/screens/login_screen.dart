@@ -7,7 +7,7 @@ import 'package:monex/features/auth/presentation/widgets/auth_snackbar.dart';
 import 'package:monex/features/auth/presentation/widgets/login_form.dart';
 import 'package:monex/features/auth/presentation/widgets/login_header.dart';
 import 'package:monex/features/auth/presentation/widgets/scroll_login_section.dart';
-import 'package:monex/features/home/screens/home_screen.dart';
+import 'package:monex/features/home/presentation/screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

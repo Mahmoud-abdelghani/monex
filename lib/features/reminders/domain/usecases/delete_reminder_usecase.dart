@@ -48,11 +48,11 @@ class DeleteReminderUsecase {
           await notificationService.scheduleNotification(
             NotificationRequest(
               id: scheduleId,
-              title: reminder.title,
+              title: reminder.title.value,
               body: 'Reminder for ${reminder.title} amount ${reminder.amount}',
-              scheduleDate: reminder.scheduleDate,
+              scheduleDate: reminder.scheduleDate.value,
               recurrence: reminder.frequency.toNotificationRecurrence(),
-              endDate: reminder.deadline,
+              endDate: reminder.deadline.value,
             ),
           );
         }
@@ -69,11 +69,11 @@ class DeleteReminderUsecase {
         await notificationService.scheduleNotification(
           NotificationRequest(
             id: scheduleId,
-            title: reminder.title,
+            title: reminder.title.value,
             body: 'Reminder for ${reminder.title} amount ${reminder.amount}',
-            scheduleDate: reminder.scheduleDate,
+            scheduleDate: reminder.scheduleDate.value,
             recurrence: reminder.frequency.toNotificationRecurrence(),
-            endDate: reminder.deadline,
+            endDate: reminder.deadline.value,
           ),
         );
       }

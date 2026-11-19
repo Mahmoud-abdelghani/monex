@@ -98,6 +98,30 @@ class RemindersRepositoryImpl implements ReminderRepository {
   Stream<Either<Failure, List<ReminderEntity>>> watchReminders() async* {
     try {
       await for (final data in remindersLocalDataSource.watchReminders()) {
+        List<int> deletedReminders = [];
+        int index = 0;
+        for (var reminder in data) {
+          if (reminder.deadline.isBefore(DateTime.now())) {
+            await remindersLocalDataSource.deleteReminder(
+              reminder.id,
+              PendingOperationModel(
+                operationId: uuid.v4(),
+                entityId: reminder.id,
+                entityType: EntityType.reminder,
+                operation: Operation.delete,
+                status: OperationStatus.pending,
+                retryCount: 0,
+                lastAttemptedAt: null,
+                createdAt: DateTime.now(),
+              ),
+            );
+            deletedReminders.add(index);
+          }
+          index++;
+        }
+        for (int i = deletedReminders.length - 1; i >= 0; i--) {
+          data.removeAt(deletedReminders[i]);
+        }
         yield right(data.map((e) => e.toEntity()).toList());
       }
     } on Exception catch (e) {

@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:monex/core/di/injection_container.dart';
 import 'package:monex/core/usecase/sync_usecase.dart';
 import 'package:monex/features/budget/presentation/cubit/create_budget_cubit.dart';
-import 'package:monex/features/home/screens/home_screen.dart';
+import 'package:monex/features/home/presentation/screens/home_screen.dart';
 
 class CreateBudgetScreen extends StatefulWidget {
   const CreateBudgetScreen({super.key});

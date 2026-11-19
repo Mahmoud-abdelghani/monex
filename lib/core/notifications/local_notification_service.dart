@@ -84,15 +84,14 @@ class LocalNotificationService implements NotificationService {
 
   @override
   Future<void> scheduleNotification(NotificationRequest request) async {
-    if (request.scheduleDate.isBefore(tz.TZDateTime.now(tz.local))) {
-      throw Exception(
-        'Cannot schedule notification in the past.',
-      );
+    if (request.scheduleDate.isBefore(
+      tz.TZDateTime.now(tz.local).subtract(const Duration(minutes: 5)),
+    )) {
+      throw Exception('Cannot schedule notification in the past.');
     }
     final notificationId = NotificationIdMapper.map(request.id);
     final notificationDetails = _notificationDetails();
     final scheduledDate = tz.TZDateTime.from(request.scheduleDate, tz.local);
-    
 
     await plugin.zonedSchedule(
       id: notificationId,
@@ -147,7 +146,7 @@ class LocalNotificationService implements NotificationService {
   }
 
   @override
-  Future<bool> areNotificationsEnabled() async {
+  Future<bool> isNotificationsEnabled() async {
     final androidPlugin = plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin

@@ -61,9 +61,9 @@ class SyncEngineImpl implements SyncEngine {
           .getPendingOperations();
       log('${operations.length} pending operations found');
       for (final operation in operations) {
-        if (!_canRetry(operation)) {
-          continue;
-        }
+        // if (!_canRetry(operation)) {
+        //   continue;
+        // }
 
         log('Syncing...1');
         switch (operation.entityType) {
@@ -274,6 +274,7 @@ class SyncEngineImpl implements SyncEngine {
         );
         return;
       }
+      log('reminder: ${reminder.toJson()}');
 
       await remindersRemoteDataSource.insertReminder(
         reminder,

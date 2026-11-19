@@ -13,25 +13,34 @@ import 'package:monex/features/reminders/domain/repository/reminder_repository.d
 import 'package:monex/features/reminders/domain/usecases/add_reminder_usecase.dart';
 import 'package:monex/features/reminders/domain/usecases/delete_reminder_usecase.dart';
 import 'package:monex/features/reminders/domain/usecases/get_reminder_by_id_usecase.dart';
+import 'package:monex/features/reminders/domain/usecases/reschdule_reminder_usecase.dart';
 import 'package:monex/features/reminders/domain/usecases/update_reminder_usecase.dart';
 import 'package:monex/features/reminders/domain/usecases/watch_reminder_usecase.dart';
 import 'package:monex/features/reminders/presentation/cubit/add_reminder_cubit.dart';
 import 'package:monex/features/reminders/presentation/cubit/delete_reminder_cubit.dart';
 import 'package:monex/features/reminders/presentation/cubit/get_reminder_by_id_cubit.dart';
+import 'package:monex/features/reminders/presentation/cubit/reschedule_reminder_cubit.dart';
 import 'package:monex/features/reminders/presentation/cubit/update_reminder_cubit.dart';
 import 'package:monex/features/reminders/presentation/cubit/watch_reminder_cubit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void registerRemindersDependencies() {
-  
   getIt.registerLazySingleton<ReminderRepository>(
     () => RemindersRepositoryImpl(getIt<RemindersLocalDataSource>()),
   );
   getIt.registerLazySingleton<AddReminderUsecase>(
-    () => AddReminderUsecase(reminderRepository: getIt<ReminderRepository>(), notificationService: getIt<NotificationService>(), notificationScheduleCalculator: getIt<NotificationScheduleCalculator>()),
+    () => AddReminderUsecase(
+      reminderRepository: getIt<ReminderRepository>(),
+      notificationService: getIt<NotificationService>(),
+      notificationScheduleCalculator: getIt<NotificationScheduleCalculator>(),
+    ),
   );
   getIt.registerLazySingleton<UpdateReminderUsecase>(
-    () => UpdateReminderUsecase( reminderRepository: getIt<ReminderRepository>(), notificationService: getIt<NotificationService>(), notificationScheduleCalculator: getIt<NotificationScheduleCalculator>() ),
+    () => UpdateReminderUsecase(
+      reminderRepository: getIt<ReminderRepository>(),
+      notificationService: getIt<NotificationService>(),
+      notificationScheduleCalculator: getIt<NotificationScheduleCalculator>(),
+    ),
   );
   getIt.registerLazySingleton<DeleteReminderUsecase>(
     () => DeleteReminderUsecase(
@@ -45,6 +54,13 @@ void registerRemindersDependencies() {
   );
   getIt.registerLazySingleton<WatchReminderUsecase>(
     () => WatchReminderUsecase(getIt<ReminderRepository>()),
+  );
+  getIt.registerLazySingleton<ReschduleReminderUsecase>(
+    () => ReschduleReminderUsecase(
+      notificationService: getIt<NotificationService>(),
+      notificationScheduleCalculator: getIt<NotificationScheduleCalculator>(),
+      reminderRepository: getIt<ReminderRepository>(),
+    ),
   );
   getIt.registerFactory<AddReminderCubit>(
     () => AddReminderCubit(getIt<AddReminderUsecase>()),
@@ -60,5 +76,8 @@ void registerRemindersDependencies() {
   );
   getIt.registerFactory<GetReminderByIdCubit>(
     () => GetReminderByIdCubit(getIt<GetReminderByIdUsecase>()),
+  );
+  getIt.registerFactory<RescheduleReminderCubit>(
+    () => RescheduleReminderCubit(getIt<ReschduleReminderUsecase>()),
   );
 }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:monex/core/enums/contribution_period.dart';
@@ -18,16 +20,15 @@ class AddReminderCubit extends Cubit<AddReminderState> {
   }) async {
     emit(AddReminderLoading());
     final result = await addReminderUsecase(
-
       title: title,
       amount: amount,
       frequency: frequency,
       deadline: deadline,
-      scheduleDate: scheduleDate
+      scheduleDate: scheduleDate,
     );
-    result.fold(
-      (l) => emit(AddReminderFailure(l.message)),
-      (r) => emit(AddReminderSuccess()),
-    );
+    result.fold((l) {
+      log('Fail');
+      emit(AddReminderFailure(l.message));
+    }, (r) => emit(AddReminderSuccess()));
   }
 }
